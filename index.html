@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NTE Progression Checklist</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Custom scrollbar and animations */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .checkbox-custom:checked + span { text-decoration: line-through; color: #64748b; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+    <div class="w-full max-w-6xl mx-auto p-6 space-y-6">
+        
+        <div class="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-slate-800 pb-4 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-wider text-cyan-400 uppercase">Neverness to Everness</h1>
+                <p class="text-xs text-slate-400 tracking-widest uppercase">HELPER Checklist System</p>
+            </div>
+            <div id="et-clock" class="text-sm font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-amber-400 self-start sm:self-center">
+                Loading ET Clock...
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="w-full bg-slate-800/40 border border-cyan-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                        <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> Daily Priorities
+                        </h2>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="text-xs font-mono px-2 py-0.5 rounded border bg-cyan-500/10 text-cyan-400 border-cyan-500/20">Resets 5 AM ET</span>
+                            <span id="daily-timer" class="text-[11px] font-mono text-slate-400 mt-1">--h --m left</span>
+                        </div>
+                    </div>
+                    <div id="daily-list" class="w-full divide-y divide-slate-800"></div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                
+                <div class="w-full bg-slate-800/40 border border-purple-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl">
+                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                        <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Weekly Priorities
+                        </h2>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="text-xs font-mono px-2 py-0.5 rounded border bg-purple-500/10 text-purple-400 border-purple-500/20">Resets Mon 5 AM ET</span>
+                            <span id="weekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                        </div>
+                    </div>
+                    <div id="weekly-list" class="w-full divide-y divide-slate-800"></div>
+                </div>
+
+                <div class="w-full bg-slate-800/40 border border-emerald-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl">
+                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                        <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bi-Weekly Priorities
+                        </h2>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="text-xs font-mono px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Every 2 Weeks</span>
+                            <span id="biweekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                        </div>
+                    </div>
+                    <div id="biweekly-list" class="w-full divide-y divide-slate-800"></div>
+                </div>
+
+                <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl">
+                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                        <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Monthly Shop
+                        </h2>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="text-xs font-mono px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">Resets 1st @ 5 AM ET</span>
+                            <span id="monthly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                        </div>
+                    </div>
+                    <div id="monthly-list" class="w-full divide-y divide-slate-800"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const defaultDailies = [
+            "Manage Cafe & Collect Fons",
+            "Make a Wish at Nacupeda's Pool",
+            "Pray at the Fortune Shades Tree",
+            "Bond Event (Movies, Ferris Wheel)",
+            "Witch's House Daily Fortune Readings",
+            "Give Gifts to Characters (Max 10)",
+            "Get Daily Free Module",
+            "Farm Anomaly Furniture Materials",
+            "Farm Fons with Chiz",
+            "Beat Up Civilians for Items"
+        ];
+
+        const defaultWeeklies = [
+            "Defeat 3 Weekly Bosses (Anomaly Pilgrimage)",
+            "Burn all City Stamina",
+            "Clear Special Delivery Commission (Old Mailbox)",
+            "Enter Realm of Greed & defeat Mammon Boss",
+            "Visit Ebisu's Auction House",
+            "Complete Weekly Battle Pass Missions"
+        ];
+
+        const defaultBiweeklies = [
+            "Pink Paws Heist"
+        ];
+
+        const defaultMonthlies = [
+            "Hunter Exchange"
+        ];
+
+        // Core App State
+        let state = {
+            dailies: {},
+            weeklies: {},
+            biweeklies: {},
+            monthlies: {},
+            lastCheckedDaily: 0,
+            lastCheckedWeekly: 0,
+            lastCheckedBiweekly: 0,
+            lastCheckedMonthly: 0
+        };
+
+        // Bi-weekly Anchor: Monday, June 8th, 2026, 5:00:00 AM ET
+        const BIWEEKLY_ANCHOR = new Date("2026-06-08T05:00:00-04:00").getTime();
+
+        function getTargetResets() {
+            const etString = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+            const nowET = new Date(etString);
+            const currentTimestamp = nowET.getTime();
+
+            // 1. Daily Reset (Today at 5 AM ET)
+            let dReset = new Date(nowET);
+            dReset.setHours(5, 0, 0, 0);
+            if (nowET < dReset) dReset.setDate(dReset.getDate() - 1);
+            const dailyTarget = dReset.getTime();
+
+            // 2. Weekly Reset (Last Monday at 5 AM ET)
+            let wReset = new Date(dailyTarget);
+            const daysSinceMonday = (wReset.getDay() === 0) ? 6 : wReset.getDay() - 1;
+            wReset.setDate(wReset.getDate() - daysSinceMonday);
+            const weeklyTarget = wReset.getTime();
+
+            // 3. Bi-Weekly Reset
+            let biweeklyTarget = BIWEEKLY_ANCHOR;
+            const msPerTwoWeeks = 14 * 24 * 60 * 60 * 1000;
+            if (currentTimestamp >= BIWEEKLY_ANCHOR) {
+                const msPassed = currentTimestamp - BIWEEKLY_ANCHOR;
+                const completedCycles = Math.floor(msPassed / msPerTwoWeeks);
+                biweeklyTarget = BIWEEKLY_ANCHOR + (completedCycles * msPerTwoWeeks);
+            } else {
+                biweeklyTarget = BIWEEKLY_ANCHOR - msPerTwoWeeks;
+            }
+
+            // 4. Monthly Reset
+            let mReset = new Date(nowET);
+            mReset.setDate(1);
+            mReset.setHours(5, 0, 0, 0);
+            if (nowET < mReset) {
+                mReset.setMonth(mReset.getMonth() - 1);
+                mReset.setDate(1);
+                mReset.setHours(5, 0, 0, 0);
+            }
+            const monthlyTarget = mReset.getTime();
+
+            return { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, nowET };
+        }
+
+        function formatCountdown(ms) {
+            if (ms < 0) return "Resetting...";
+            const totalSecs = Math.floor(ms / 1000);
+            const totalMins = Math.floor(totalSecs / 60);
+            const totalHours = Math.floor(totalMins / 60);
+            const days = Math.floor(totalHours / 24);
+
+            const hours = totalHours % 24;
+            const minutes = totalMins % 60;
+            const seconds = totalSecs % 60;
+
+            if (days > 0) {
+                return `${days}d ${hours}h left`;
+            }
+            return `${hours}h ${minutes}m ${seconds}s left`;
+        }
+
+        function updateTimers() {
+            const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, nowET } = getTargetResets();
+            const currentMs = nowET.getTime();
+
+            // Next reset times are exactly one cycle forward from the last reset target
+            const nextDaily = dailyTarget + (24 * 60 * 60 * 1000);
+            const nextWeekly = weeklyTarget + (7 * 24 * 60 * 60 * 1000);
+            const nextBiweekly = biweeklyTarget + (14 * 24 * 60 * 60 * 1000);
+            
+            // Next month boundary calculation
+            let nextMonthlyDate = new Date(monthlyTarget);
+            nextMonthlyDate.setMonth(nextMonthlyDate.getMonth() + 1);
+            const nextMonthly = nextMonthlyDate.getTime();
+
+            document.getElementById('daily-timer').innerText = formatCountdown(nextDaily - currentMs);
+            document.getElementById('weekly-timer').innerText = formatCountdown(nextWeekly - currentMs);
+            document.getElementById('biweekly-timer').innerText = formatCountdown(nextBiweekly - currentMs);
+            document.getElementById('monthly-timer').innerText = formatCountdown(nextMonthly - currentMs);
+        }
+
+        function updateClock() {
+            const options = { 
+                timeZone: "America/New_York", 
+                month: "short", day: "numeric", year: "numeric",
+                hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true 
+            };
+            document.getElementById('et-clock').innerText = "✦ " + new Date().toLocaleString("en-US", options) + " ET";
+            updateTimers();
+        }
+
+        function initApp() {
+            const savedState = localStorage.getItem('nte_checklist_state_v2');
+            if (savedState) {
+                state = JSON.parse(savedState);
+            }
+
+            const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget } = getTargetResets();
+
+            if (!state.lastCheckedDaily || state.lastCheckedDaily < dailyTarget) {
+                defaultDailies.forEach(t => state.dailies[t] = false);
+                state.lastCheckedDaily = dailyTarget;
+            }
+            if (!state.lastCheckedWeekly || state.lastCheckedWeekly < weeklyTarget) {
+                defaultWeeklies.forEach(t => state.weeklies[t] = false);
+                state.lastCheckedWeekly = weeklyTarget;
+            }
+            if (!state.lastCheckedBiweekly || state.lastCheckedBiweekly < biweeklyTarget) {
+                defaultBiweeklies.forEach(t => state.biweeklies[t] = false);
+                state.lastCheckedBiweekly = biweeklyTarget;
+            }
+            if (!state.lastCheckedMonthly || state.lastCheckedMonthly < monthlyTarget) {
+                defaultMonthlies.forEach(t => state.monthlies[t] = false);
+                state.lastCheckedMonthly = monthlyTarget;
+            }
+
+            if (!state.biweeklies) state.biweeklies = {};
+            if (!state.monthlies) state.monthlies = {};
+
+            defaultDailies.forEach(t => { if (state.dailies[t] === undefined) state.dailies[t] = false; });
+            defaultWeeklies.forEach(t => { if (state.weeklies[t] === undefined) state.weeklies[t] = false; });
+            defaultBiweeklies.forEach(t => { if (state.biweeklies[t] === undefined) state.biweeklies[t] = false; });
+            defaultMonthlies.forEach(t => { if (state.monthlies[t] === undefined) state.monthlies[t] = false; });
+
+            saveToStorage();
+            renderLists();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('nte_checklist_state_v2', JSON.stringify(state));
+        }
+
+        function toggleTask(category, task, checked) {
+            state[category][task] = checked;
+            saveToStorage();
+        }
+
+        function renderLists() {
+            const dContainer = document.getElementById('daily-list');
+            const wContainer = document.getElementById('weekly-list');
+            const bContainer = document.getElementById('biweekly-list');
+            const mContainer = document.getElementById('monthly-list');
+
+            dContainer.innerHTML = ''; wContainer.innerHTML = ''; bContainer.innerHTML = ''; mContainer.innerHTML = '';
+
+            defaultDailies.forEach((t, i) => dContainer.appendChild(createTaskRow('dailies', t, state.dailies[t], `d-${i}`, 'checked:bg-cyan-500 checked:border-cyan-500')));
+            defaultWeeklies.forEach((t, i) => wContainer.appendChild(createTaskRow('weeklies', t, state.weeklies[t], `w-${i}`, 'checked:bg-purple-500 checked:border-purple-500')));
+            defaultBiweeklies.forEach((t, i) => bContainer.appendChild(createTaskRow('biweeklies', t, state.biweeklies[t], `b-${i}`, 'checked:bg-emerald-500 checked:border-emerald-500')));
+            defaultMonthlies.forEach((t, i) => mContainer.appendChild(createTaskRow('monthlies', t, state.monthlies[t], `m-${i}`, 'checked:bg-amber-500 checked:border-amber-500')));
+        }
+
+        function createTaskRow(category, task, isChecked, id, colorClass) {
+            const div = document.createElement('div');
+            div.className = "flex items-center py-3 justify-between hover:bg-slate-800/40 px-2 rounded-lg transition-colors group";
+            div.innerHTML = `
+                <label class="flex items-center space-x-3 w-full cursor-pointer select-none">
+                    <input type="checkbox" id="${id}" ${isChecked ? 'checked' : ''} 
+                        class="checkbox-custom h-5 w-5 rounded border-slate-700 bg-slate-900/50 text-slate-900 focus:ring-0 focus:ring-offset-0 transition-all appearance-none border checked:after:content-['✓'] checked:after:flex checked:after:justify-center checked:after:text-xs checked:after:font-bold checked:after:text-slate-900 ${colorClass}">
+                    <span class="text-slate-200 text-sm font-medium group-hover:text-white transition-colors">${task}</span>
+                </label>
+            `;
+            div.querySelector('input').addEventListener('change', (e) => toggleTask(category, task, e.target.checked));
+            return div;
+        }
+
+        // Execution Instantiation
+        initApp();
+        updateClock();
+        setInterval(updateClock, 1000); // Drives both clock and sub-second precise countdown updates
+        setInterval(initApp, 30000); 
+    </script>
+</body>
+</html>
