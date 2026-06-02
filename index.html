@@ -8,7 +8,6 @@
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIk5URSBQcm9ncmVzc2lvbiBDaGVja2xpc3QiLAogICJzaG9ydF9uYW1lIjogIk5URSBIRUxQRVIiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiCn0=">
     
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     
     <style>
@@ -16,7 +15,10 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* Smooth transitions when checking tasks off */
+        .task-row { transition: opacity 0.2s ease, transform 0.2s ease; }
         .checkbox-custom:checked + span span:first-child { text-decoration: line-through; color: #64748b; }
+        .checkbox-custom:checked + span { opacity: 0.45; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -30,6 +32,9 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 self-start sm:self-center">
+                <button onclick="confirmReset()" class="text-xs font-mono px-2.5 py-1 rounded border bg-rose-950/20 border-rose-900/50 text-rose-400 hover:bg-rose-900/30 transition-all cursor-pointer">
+                    ⚠ Clear Data
+                </button>
                 <div id="sync-status" class="text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-slate-400 flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-slate-500"></span> Local-Only Mode
                 </div>
@@ -42,7 +47,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="w-full bg-slate-800/40 border border-cyan-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl flex flex-col justify-between">
                 <div>
-                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                    <div class="w-full flex items-center justify-between mb-2 gap-2">
                         <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> Daily Priorities
                         </h2>
@@ -51,13 +56,24 @@
                             <span id="daily-timer" class="text-[11px] font-mono text-slate-400 mt-1">--h --m left</span>
                         </div>
                     </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                            <span>Progress</span>
+                            <span id="daily-progress-text">0% (0/0)</span>
+                        </div>
+                        <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="daily-progress-bar" class="h-full bg-cyan-500 transition-all duration-300 w-0"></div>
+                        </div>
+                    </div>
+
                     <div id="daily-list" class="w-full divide-y divide-slate-800"></div>
                 </div>
             </div>
 
             <div class="space-y-6">
                 <div class="w-full bg-slate-800/40 border border-purple-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl">
-                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                    <div class="w-full flex items-center justify-between mb-2 gap-2">
                         <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Weekly Priorities
                         </h2>
@@ -66,11 +82,20 @@
                             <span id="weekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
                         </div>
                     </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                            <span>Progress</span>
+                            <span id="weekly-progress-text">0% (0/0)</span>
+                        </div>
+                        <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="weekly-progress-bar" class="h-full bg-purple-500 transition-all duration-300 w-0"></div>
+                        </div>
+                    </div>
                     <div id="weekly-list" class="w-full divide-y divide-slate-800"></div>
                 </div>
 
                 <div class="w-full bg-slate-800/40 border border-emerald-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl">
-                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                    <div class="w-full flex items-center justify-between mb-2 gap-2">
                         <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bi-Weekly Priorities
                         </h2>
@@ -79,17 +104,35 @@
                             <span id="biweekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
                         </div>
                     </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                            <span>Progress</span>
+                            <span id="biweekly-progress-text">0% (0/0)</span>
+                        </div>
+                        <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="biweekly-progress-bar" class="h-full bg-emerald-500 transition-all duration-300 w-0"></div>
+                        </div>
+                    </div>
                     <div id="biweekly-list" class="w-full divide-y divide-slate-800"></div>
                 </div>
 
                 <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl">
-                    <div class="w-full flex items-center justify-between mb-4 gap-2">
+                    <div class="w-full flex items-center justify-between mb-2 gap-2">
                         <h2 class="text-xl font-bold tracking-wide flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Monthly Shop
                         </h2>
                         <div class="text-right flex flex-col items-end">
                             <span class="text-xs font-mono px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">Resets 1st @ 5 AM ET</span>
                             <span id="monthly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                            <span>Progress</span>
+                            <span id="monthly-progress-text">0% (0/0)</span>
+                        </div>
+                        <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="monthly-progress-bar" class="h-full bg-amber-500 transition-all duration-300 w-0"></div>
                         </div>
                     </div>
                     <div id="monthly-list" class="w-full divide-y divide-slate-800"></div>
@@ -99,16 +142,15 @@
     </div>
 
     <script>
-        // --- YOUR SUPABASE CONFIGURATION ---
+        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = "https://zpdvqtmxvkzkycvoqvyp.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_9jyt1HHwYZcvW-nOXl2iMw_LASe50Q";
+        const SUPABASE_ANON_KEY = "sb_publishable_9jyt1HHwYZcvW-nOXl2iMw_LAUSe50Q";
         let supabase = null;
 
-        if (SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL" && SUPABASE_URL !== "") {
+        if (SUPABASE_URL && SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL") {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
-        // Updated structure: Array of objects with name and optional subtext
         const defaultDailies = [
             { name: "Manage Cafe & Collect Fons", subtext: "Update Cafe with new trending items" },
             { name: "Make a Wish at Nacupeda's Pool" },
@@ -202,10 +244,23 @@
             syncKey = window.location.hash;
 
             const localStorageKey = 'nte_state_' + syncKey;
-
             const savedState = localStorage.getItem(localStorageKey);
+            
             if (savedState) {
                 state = JSON.parse(savedState);
+                
+                // DATA RECOVERY GUARD: Converts legacy text formats into safely bound dictionaries
+                ['dailies', 'weeklies', 'biweeklies', 'monthlies'].forEach(cat => {
+                    if (state[cat] && typeof state[cat] === 'object' && !Array.isArray(state[cat])) {
+                        for (let key in state[cat]) {
+                            if (typeof state[cat][key] === 'object' && state[cat][key] !== null) {
+                                state[cat][key] = state[cat][key].checked || false;
+                            }
+                        }
+                    } else {
+                        state[cat] = {};
+                    }
+                });
             } else {
                 state = {
                     dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {},
@@ -240,7 +295,6 @@
 
             const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget } = getTargetResets();
 
-            // Check using .name as key map strings instead of pure strings
             if (!state.lastCheckedDaily || state.lastCheckedDaily < dailyTarget) { defaultDailies.forEach(t => state.dailies[t.name] = false); state.lastCheckedDaily = dailyTarget; }
             if (!state.lastCheckedWeekly || state.lastCheckedWeekly < weeklyTarget) { defaultWeeklies.forEach(t => state.weeklies[t.name] = false); state.lastCheckedWeekly = weeklyTarget; }
             if (!state.lastCheckedBiweekly || state.lastCheckedBiweekly < biweeklyTarget) { defaultBiweeklies.forEach(t => state.biweeklies[t.name] = false); state.lastCheckedBiweekly = biweeklyTarget; }
@@ -274,6 +328,16 @@
             pushStateToCloud(); 
         }
 
+        // Dynamically computes and updates the completion tracking metrics
+        function updateProgressBar(category, defaultList, prefix) {
+            const total = defaultList.length;
+            const completed = defaultList.filter(t => state[category][t.name]).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            document.getElementById(`${prefix}-progress-bar`).style.width = `${percentage}%`;
+            document.getElementById(`${prefix}-progress-text`).innerText = `${percentage}% (${completed}/${total})`;
+        }
+
         function renderLists() {
             const d = document.getElementById('daily-list'), w = document.getElementById('weekly-list'), b = document.getElementById('biweekly-list'), m = document.getElementById('monthly-list');
             d.innerHTML = ''; w.innerHTML = ''; b.innerHTML = ''; m.innerHTML = '';
@@ -282,17 +346,22 @@
             defaultWeeklies.forEach((t, i) => w.appendChild(createTaskRow('weeklies', t, state.weeklies[t.name], `w-${i}`, 'checked:bg-purple-500 checked:border-purple-500')));
             defaultBiweeklies.forEach((t, i) => b.appendChild(createTaskRow('biweeklies', t, state.biweeklies[t.name], `b-${i}`, 'checked:bg-emerald-500 checked:border-emerald-500')));
             defaultMonthlies.forEach((t, i) => m.appendChild(createTaskRow('monthlies', t, state.monthlies[t.name], `m-${i}`, 'checked:bg-amber-500 checked:border-amber-500')));
+
+            // Re-render calculations for bar metrics
+            updateProgressBar('dailies', defaultDailies, 'daily');
+            updateProgressBar('weeklies', defaultWeeklies, 'weekly');
+            updateProgressBar('biweeklies', defaultBiweeklies, 'biweekly');
+            updateProgressBar('monthlies', defaultMonthlies, 'monthly');
         }
 
         function createTaskRow(category, task, isChecked, id, colorClass) {
             const div = document.createElement('div');
-            div.className = "flex items-center py-3 justify-between hover:bg-slate-800/40 px-2 rounded-lg transition-colors group";
+            div.className = "task-row flex items-center py-3 justify-between hover:bg-slate-800/40 px-2 rounded-lg transition-colors group";
             
-            // Layout adjusted to flex-col for label elements so subtext sits directly beneath the name.
             div.innerHTML = `
                 <label class="flex items-start space-x-3 w-full cursor-pointer select-none">
                     <input type="checkbox" id="${id}" ${isChecked ? 'checked' : ''} class="checkbox-custom mt-0.5 h-5 w-5 rounded border-slate-700 bg-slate-900/50 text-slate-900 focus:ring-0 focus:ring-offset-0 transition-all appearance-none border checked:after:content-['✓'] checked:after:flex checked:after:justify-center checked:after:text-xs checked:after:font-bold checked:after:text-slate-900 ${colorClass}">
-                    <span class="flex flex-col">
+                    <span class="flex flex-col transition-all duration-200">
                         <span class="text-slate-200 text-sm font-medium group-hover:text-white transition-colors">${task.name}</span>
                         ${task.subtext ? `<span class="text-xs text-slate-400 mt-0.5">${task.subtext}</span>` : ''}
                     </span>
@@ -301,6 +370,19 @@
             
             div.querySelector('input').addEventListener('change', (e) => toggleTask(category, task.name, e.target.checked));
             return div;
+        }
+
+        function confirmReset() {
+            if (confirm("Are you sure you want to clear this profile's task memory? This resets local and cloud parameters immediately.")) {
+                const localStorageKey = 'nte_state_' + syncKey;
+                localStorage.removeItem(localStorageKey);
+                state = {
+                    dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {},
+                    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0
+                };
+                pushStateToCloud();
+                initApp();
+            }
         }
 
         initApp(); updateClock();
