@@ -83,6 +83,22 @@ To run or test your application locally, launch the file inside a micro-server w
 
 ---
 
+Markdown
+### 🐍 Python Server Quick Start
+
+If you have Python installed, you can spin up the environment instantly without any installations:
+
+1. Open your terminal or command prompt.
+2. Navigate (`cd`) into the directory containing your project's `index.html`.
+3. Execute the server command:
+   ```bash
+   python -m http.server 8080
+   ```
+(Note: Use py -m http.server 8080 on some Windows setups, or python -m SimpleHTTPServer 8080 if using legacy Python 2).
+4. Open your browser and head to http://localhost:8080.
+
+---
+
 ## 🛡️ Security Architecture Notice
 
 This code exposes a public publishable key token (`sb_publishable_...`) directly in the raw client source.
