@@ -4,6 +4,17 @@ A high-performance, responsive web-based companion app designed to track daily, 
 
 ---
 
+## 📌 Table of Contents
+
+* [🛠️ Tech Stack & Architecture](#️-tech-stack--architecture)
+* [🚀 Core Features](#-core-features)
+* [🗄️ Database Table Setup](#️-database-table-setup)
+* [📡 Local Environment Execution](#-local-environment-execution)
+* [🛡️ Security Architecture Notice](#️-security-architecture-notice)
+* [🧪 Testing & Continuous Integration](#-testing--continuous-integration)
+
+---
+
 ## 🛠️ Tech Stack & Architecture
 
 * **Frontend Framework:** Tailwind CSS v4 (via JIT compiler)
@@ -104,3 +115,16 @@ If you have Python installed, you can spin up the environment instantly without 
 This code exposes a public publishable key token (`sb_publishable_...`) directly in the raw client source.
 
 This is 100% secure and safe to push to public GitHub repositories. Supabase publishable public keys do not grant admin access to database structures. Because the table is bound by strict Row Level Security (RLS) policies, it is impossible for an outside actor to maliciously read, alter, or extract global data payloads unless they possess your randomly generated, 18-character browser URL hash parameter.
+
+---
+
+## 🧪 Testing & Continuous Integration
+
+This project uses **Vitest** for unit and integration testing, paired with **GitHub Actions** for continuous integration (CI) to ensure database connectivity and state stability.
+
+### Local Testing
+To run the test suite locally, ensure your dependencies are installed and execute the test runner:
+
+```bash
+npm install
+npm test
