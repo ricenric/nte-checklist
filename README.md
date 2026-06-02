@@ -80,22 +80,8 @@ alter publication supabase_realtime add table nte_sync;
 
 ---
 
-## 📡 Local Environment Execution
-
-Modern browsers enforce rigid security restrictions regarding raw local file system rendering (`file:///`). Because of this, network sync behaviors are blocked when opening `index.html` via double-click.
-
-To run or test your application locally, launch the file inside a micro-server wrapper:
-
-| Server Utility | Deployment Script | Localhost Access Port |
-| :--- | :--- | :--- |
-| **VS Code Live Server** | Click the *Go Live* toggle in the UI status bar | `http://127.0.0.1:5500` |
-| **Python CLI Module** | `python -m http.server 8080` | `http://localhost:8080` |
-| **Node.js (http-server)** | `npx http-server -p 8080` | `http://localhost:8080` |
-
----
-
 Markdown
-### 🐍 Python Server Quick Start
+### 🐍 Local Environment Execution (Python Server Quick Start)
 
 If you have Python installed, you can spin up the environment instantly without any installations:
 

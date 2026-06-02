@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/ricenric/nte-checklist#readme",
   "devDependencies": {
+    "happy-dom": "^20.9.0",
     "vitest": "^4.1.8"
   }
 }
