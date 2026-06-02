@@ -44,32 +44,51 @@ let state = {
 let syncKey = "";
 const BIWEEKLY_ANCHOR = new Date("2026-06-08T05:00:00-04:00").getTime();
 
-// 💡 ADD EXPORT HERE SO VITEST CAN GRAB IT
 export function getTargetResets() {
-    const etString = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
-    const nowET = new Date(etString);
-    const currentTimestamp = nowET.getTime();
+    // 1. Grab the exact absolute universal time right now
+    const now = new Date();
+    const currentMs = now.getTime();
 
-    let dReset = new Date(nowET); dReset.setHours(5, 0, 0, 0);
-    if (nowET < dReset) dReset.setDate(dReset.getDate() - 1);
-    const dailyTarget = dReset.getTime();
+    // 2. Calculate today's 5:00 AM ET Server Reset in absolute UTC.
+    // Since 5:00 AM ET is exactly 9:00 AM UTC (Standard Time), we anchor here.
+    const todayResetUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 9, 0, 0, 0);
+    
+    let dailyTarget = todayResetUTC;
+    // If the absolute current time hasn't reached 9:00 AM UTC yet, the reset boundary was yesterday
+    if (currentMs < todayResetUTC) {
+        dailyTarget -= 24 * 60 * 60 * 1000; // Subtract 1 full day in milliseconds
+    }
 
+    // 3. Weekly Reset Math (Monday at 5:00 AM ET / 9:00 AM UTC)
     let wReset = new Date(dailyTarget);
-    const daysSinceMonday = (wReset.getDay() === 0) ? 6 : wReset.getDay() - 1;
-    wReset.setDate(wReset.getDate() - daysSinceMonday);
-    const weeklyTarget = wReset.getTime();
+    // getUTCDay() yields: 0 = Sunday, 1 = Monday, etc.
+    const daysSinceMonday = (wReset.getUTCDay() === 0) ? 6 : wReset.getUTCDay() - 1;
+    const weeklyTarget = dailyTarget - (daysSinceMonday * 24 * 60 * 60 * 1000);
 
+    // 4. Bi-Weekly Reset Math (Anchored to your fixed absolute Unix timestamp)
     let biweeklyTarget = BIWEEKLY_ANCHOR;
     const msPerTwoWeeks = 14 * 24 * 60 * 60 * 1000;
-    if (currentTimestamp >= BIWEEKLY_ANCHOR) {
-        biweeklyTarget = BIWEEKLY_ANCHOR + (Math.floor((currentTimestamp - BIWEEKLY_ANCHOR) / msPerTwoWeeks) * msPerTwoWeeks);
+    if (currentMs >= BIWEEKLY_ANCHOR) {
+        biweeklyTarget = BIWEEKLY_ANCHOR + (Math.floor((currentMs - BIWEEKLY_ANCHOR) / msPerTwoWeeks) * msPerTwoWeeks);
     } else {
         biweeklyTarget = BIWEEKLY_ANCHOR - msPerTwoWeeks;
     }
 
-    let mReset = new Date(nowET); mReset.setDate(1); mReset.setHours(5, 0, 0, 0);
-    if (nowET < mReset) { mReset.setMonth(mReset.getMonth() - 1); mReset.setDate(1); mReset.setHours(5, 0, 0, 0); }
-    return { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget: mReset.getTime(), nowET };
+    // 5. Monthly Reset Math (1st of the month at 5:00 AM ET / 9:00 AM UTC)
+    const monthlyTarget = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 9, 0, 0, 0);
+    let finalizedMonthly = monthlyTarget;
+    if (currentMs < monthlyTarget) {
+        // If we haven't hit the 1st of this month yet, target the 1st of the previous month
+        finalizedMonthly = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1, 9, 0, 0, 0);
+    }
+
+    return { 
+        dailyTarget, 
+        weeklyTarget, 
+        biweeklyTarget, 
+        monthlyTarget: finalizedMonthly, 
+        nowET: now // Renamed logically internally, but preserves structure compatibility
+    };
 }
 
 // 💡 REFACTOR/EXPORT INDEPENDENT LOGIC FOR EASIER TESTING

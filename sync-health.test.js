@@ -41,25 +41,16 @@ describe('Supabase Sync Gateway Infrastructure Validation', () => {
 describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    // Pre-seed mock DOM fragments to catch any lingering UI function updates gracefully
-    document.body.innerHTML = `
-      <div id="daily-timer"></div>
-      <div id="weekly-timer"></div>
-      <div id="biweekly-timer"></div>
-      <div id="monthly-timer"></div>
-      <div id="et-clock"></div>
-    `;
   });
 
   afterEach(() => {
     vi.useRealTimers();
     localStorage.clear();
-    document.body.innerHTML = '';
   });
 
   it('should maintain state when checking 1 minute BEFORE the 5:00 AM ET server reset', () => {
-    // Set mock time to 4:59 AM ET (8:59 AM UTC)
-    const preResetTime = new Date(Date.UTC(2026, 5, 2, 8, 59, 0));
+    // 5:00 AM ET is 9:00 AM UTC. 1 minute before is 8:59 AM UTC.
+    const preResetTime = new Date(Date.UTC(2026, 5, 2, 8, 59, 0)); // June 2, 2026, 08:59:00 UTC
     vi.setSystemTime(preResetTime);
 
     const mockState = { 
@@ -75,7 +66,7 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
   });
 
   it('should automatically wipe daily tasks exactly 1 minute AFTER the 5:00 AM ET reset boundary', () => {
-    // Set initial mock time to 4:59 AM ET (8:59 AM UTC)
+    // Start at 1 minute before the reset threshold (8:59 AM UTC)
     const initialTime = new Date(Date.UTC(2026, 5, 2, 8, 59, 0));
     vi.setSystemTime(initialTime);
 
@@ -85,7 +76,7 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
       weeklies: {}, biweeklies: {}, monthlies: {}
     };
 
-    // Move forward past the 5:00 AM threshold boundary
+    // Fast-forward time by 2 minutes, passing 9:00 AM UTC (5:00 AM ET) to hit 9:01 AM UTC
     vi.advanceTimersByTime(2 * 60 * 1000); 
 
     const updatedResult = checkAndResetState('#user-test', originalState);
