@@ -277,6 +277,13 @@
                     let { data, error } = await supabase.from('nte_sync').select('state_json').eq('sync_key', syncKey).maybeSingle();
                     if (data && data.state_json) {
                         state = data.state_json;
+                        
+                        // CRASH SHIELD 1: Protects the initial page load
+                        if (!state.dailies) state.dailies = {};
+                        if (!state.weeklies) state.weeklies = {};
+                        if (!state.biweeklies) state.biweeklies = {};
+                        if (!state.monthlies) state.monthlies = {};
+
                         localStorage.setItem(localStorageKey, JSON.stringify(state));
                     }
                 } catch(e) { 
@@ -287,6 +294,13 @@
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'nte_sync', filter: `sync_key=eq.${syncKey}` }, (payload) => {
                     if (payload.new && payload.new.state_json) {
                         state = payload.new.state_json;
+                        
+                        // CRASH SHIELD 2: Protects against live real-time test updates
+                        if (!state.dailies) state.dailies = {};
+                        if (!state.weeklies) state.weeklies = {};
+                        if (!state.biweeklies) state.biweeklies = {};
+                        if (!state.monthlies) state.monthlies = {};
+
                         localStorage.setItem(localStorageKey, JSON.stringify(state));
                         renderLists();
                     }

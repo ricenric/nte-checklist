@@ -1,0 +1,23 @@
+{
+  "name": "nte-checklist",
+  "version": "1.0.0",
+  "description": "A high-performance, responsive web-based companion app designed to track daily, weekly, bi-weekly, and monthly server progression tasks for *Neverness to Everness*. Built with a modern vanilla stack and real-time cloud synchronization.",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ricenric/nte-checklist.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ricenric/nte-checklist/issues"
+  },
+  "homepage": "https://github.com/ricenric/nte-checklist#readme",
+  "devDependencies": {
+    "vitest": "^4.1.8"
+  }
+}
