@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NTE Progression Checklist</title>
     
-    <!-- Cleaned up Manifest Link -->
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIk5URSBQcm9ncmVzc2lvbiBDaGVja2xpc3QiLAogICJzaG9ydF9uYW1lIjogIk5URSBIRUxQRVIiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiCn0=">
     
-    <!-- Tailwind CSS (Restores your styling) -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     
-    <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/dist/umd/supabase.js"></script>
     
     <style>
@@ -19,7 +16,7 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        .checkbox-custom:checked + span { text-decoration: line-through; color: #64748b; }
+        .checkbox-custom:checked + span span:first-child { text-decoration: line-through; color: #64748b; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -104,27 +101,41 @@
     <script>
         // --- YOUR SUPABASE CONFIGURATION ---
         const SUPABASE_URL = "https://zpdvqtmxvkzkycvoqvyp.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_9jyt1HHwYZcvW-nOXl2iMw_LAUSe50Q";
+        const SUPABASE_ANON_KEY = "sb_publishable_9jyt1HHwYZcvW-nOXl2iMw_LASe50Q";
         let supabase = null;
 
-        // Initialize using the modern library entrypoint
         if (SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL" && SUPABASE_URL !== "") {
-            // Note: The modern library exports globally as `supabase` directly, 
-            // but to avoid collisions we call createClient from the window scope
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
+        // Updated structure: Array of objects with name and optional subtext
         const defaultDailies = [
-            "Manage Cafe & Collect Fons", "Make a Wish at Nacupeda's Pool", "Pray at the Fortune Shades Tree",
-            "Bond Event (Movies, Ferris Wheel)", "Witch's House Daily Fortune Readings", "Give Gifts to Characters (Max 10)",
-            "Get Daily Free Module", "Farm Anomaly Furniture Materials", "Farm Fons with Chiz", "Beat Up Civilians for Items"
+            { name: "Manage Cafe & Collect Fons", subtext: "Update Cafe with new trending items" },
+            { name: "Make a Wish at Nacupeda's Pool" },
+            { name: "Pray at the Fortune Shades Tree" },
+            { name: "Bond Event (Movies, Ferris Wheel)", subtext: "Once per day?" },
+            { name: "Witch's House Daily Fortune Readings" },
+            { name: "Give Gifts to Characters (Max 10)" },
+            { name: "Get Daily Free Module" },
+            { name: "Farm Anomaly Furniture Materials", subtext: "Vending Machine, Cursed Sword, Teddy Bear" },
+            { name: "Farm Fons with Chiz" },
+            { name: "Beat Up Civilians for Items", subtext: "Lost Wallet, Briefcases, Lunch Bags" }
         ];
         const defaultWeeklies = [
-            "Defeat 3 Weekly Bosses (Anomaly Pilgrimage)", "Burn all City Stamina", "Clear Special Delivery Commission (Old Mailbox)",
-            "Enter Realm of Greed & defeat Mammon Boss", "Visit Ebisu's Auction House", "Complete Weekly Battle Pass Missions"
+            { name: "Defeat 3 Weekly Bosses (Anomaly Pilgrimage)" },
+            { name: "Burn all City Stamina" },
+            { name: "Clear Special Delivery Commission (Old Mailbox)" },
+            { name: "Enter Realm of Greed & defeat Mammon Boss", subtext: "Auction first to upgrade" },
+            { name: "Visit Ebisu's Auction House", subtext: "Prioritize Covetous Coins for Mammon Upgrade" },
+            { name: "Complete Weekly Battle Pass Missions", subtext: "Daily play usually means overcapping on Battle Pass" }
         ];
-        const defaultBiweeklies = ["Pink Paws Heist"];
-        const defaultMonthlies = ["Hunter Exchange"];
+        const defaultBiweeklies = [
+            { name: "Pink Paws Heist", subtext: "Cap 1 million Fons" }
+        ];
+        const defaultMonthlies = [
+            { name: "Hunter Exchange" },
+            { name: "Lost Exchange (Roll Pieces)", subtext: "350 + 350 + 1400 = 2100 Lost Pieces" }
+        ];
 
         let state = {
             dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {},
@@ -183,92 +194,81 @@
         }
 
         async function initApp() {
-        // 1. Determine or set up the tracking hash handle
-        if (!window.location.hash || window.location.hash.length < 5) {
-            const newKey = "#user-" + Math.random().toString(36).substring(2, 11) + Math.random().toString(36).substring(2, 11);
-            window.location.hash = newKey;
-        }
-        syncKey = window.location.hash;
-
-        // FIX: Tie the localStorage key name directly to this specific user handle
-        const localStorageKey = 'nte_state_' + syncKey;
-
-        // 2. Load what we have locally for THIS SPECIFIC USER as a baseline fallback
-        const savedState = localStorage.getItem(localStorageKey);
-        if (savedState) {
-            state = JSON.parse(savedState);
-        } else {
-            // Clear old memory structures if this is a brand-new user handle
-            state = {
-                dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {},
-                lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0
-            };
-        }
-
-        // 3. Connect real-time hooks and pull down cloud data
-        if (supabase) {
-            const statusDiv = document.getElementById('sync-status');
-            statusDiv.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Cloud-Synced (${syncKey})`;
-            statusDiv.className = "text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-emerald-400 flex items-center gap-1.5";
-            
-            try {
-                // Fetch latest global database baseline on load
-                let { data, error } = await supabase.from('nte_sync').select('state_json').eq('sync_key', syncKey).maybeSingle();
-                
-                // If data exists in the cloud, force it to overwrite our local state
-                if (data && data.state_json) {
-                    state = data.state_json;
-                    localStorage.setItem(localStorageKey, JSON.stringify(state));
-                }
-            } catch(e) { 
-                console.error("Initial load error:", e); 
+            if (!window.location.hash || window.location.hash.length < 5) {
+                const newKey = "#user-" + Math.random().toString(36).substring(2, 11) + Math.random().toString(36).substring(2, 11);
+                window.location.hash = newKey;
             }
-            
-            // Listen dynamically for updates while the page is sitting open
-            supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'nte_sync', filter: `sync_key=eq.${syncKey}` }, (payload) => {
-                if (payload.new && payload.new.state_json) {
-                    state = payload.new.state_json;
-                    localStorage.setItem(localStorageKey, JSON.stringify(state));
-                    renderLists();
+            syncKey = window.location.hash;
+
+            const localStorageKey = 'nte_state_' + syncKey;
+
+            const savedState = localStorage.getItem(localStorageKey);
+            if (savedState) {
+                state = JSON.parse(savedState);
+            } else {
+                state = {
+                    dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {},
+                    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0
+                };
+            }
+
+            if (supabase) {
+                const statusDiv = document.getElementById('sync-status');
+                statusDiv.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Cloud-Synced (${syncKey})`;
+                statusDiv.className = "text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-emerald-400 flex items-center gap-1.5";
+                
+                try {
+                    let { data, error } = await supabase.from('nte_sync').select('state_json').eq('sync_key', syncKey).maybeSingle();
+                    if (data && data.state_json) {
+                        state = data.state_json;
+                        localStorage.setItem(localStorageKey, JSON.stringify(state));
+                    }
+                } catch(e) { 
+                    console.error("Initial load error:", e); 
                 }
-            }).subscribe();
+                
+                supabase.channel('custom-all-channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'nte_sync', filter: `sync_key=eq.${syncKey}` }, (payload) => {
+                    if (payload.new && payload.new.state_json) {
+                        state = payload.new.state_json;
+                        localStorage.setItem(localStorageKey, JSON.stringify(state));
+                        renderLists();
+                    }
+                }).subscribe();
+            }
+
+            const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget } = getTargetResets();
+
+            // Check using .name as key map strings instead of pure strings
+            if (!state.lastCheckedDaily || state.lastCheckedDaily < dailyTarget) { defaultDailies.forEach(t => state.dailies[t.name] = false); state.lastCheckedDaily = dailyTarget; }
+            if (!state.lastCheckedWeekly || state.lastCheckedWeekly < weeklyTarget) { defaultWeeklies.forEach(t => state.weeklies[t.name] = false); state.lastCheckedWeekly = weeklyTarget; }
+            if (!state.lastCheckedBiweekly || state.lastCheckedBiweekly < biweeklyTarget) { defaultBiweeklies.forEach(t => state.biweeklies[t.name] = false); state.lastCheckedBiweekly = biweeklyTarget; }
+            if (!state.lastCheckedMonthly || state.lastCheckedMonthly < monthlyTarget) { defaultMonthlies.forEach(t => state.monthlies[t.name] = false); state.lastCheckedMonthly = monthlyTarget; }
+
+            if (!state.biweeklies) state.biweeklies = {}; if (!state.monthlies) state.monthlies = {};
+            defaultDailies.forEach(t => { if (state.dailies[t.name] === undefined) state.dailies[t.name] = false; });
+            defaultWeeklies.forEach(t => { if (state.weeklies[t.name] === undefined) state.weeklies[t.name] = false; });
+            defaultBiweeklies.forEach(t => { if (state.biweeklies[t.name] === undefined) state.biweeklies[t.name] = false; });
+            defaultMonthlies.forEach(t => { if (state.monthlies[t.name] === undefined) state.monthlies[t.name] = false; });
+
+            localStorage.setItem(localStorageKey, JSON.stringify(state));
+            renderLists();
         }
-
-        // 4. Handle time resets and fill defaults if empty
-        const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget } = getTargetResets();
-
-        if (!state.lastCheckedDaily || state.lastCheckedDaily < dailyTarget) { defaultDailies.forEach(t => state.dailies[t] = false); state.lastCheckedDaily = dailyTarget; }
-        if (!state.lastCheckedWeekly || state.lastCheckedWeekly < weeklyTarget) { defaultWeeklies.forEach(t => state.weeklies[t] = false); state.lastCheckedWeekly = weeklyTarget; }
-        if (!state.lastCheckedBiweekly || state.lastCheckedBiweekly < biweeklyTarget) { defaultBiweeklies.forEach(t => state.biweeklies[t] = false); state.lastCheckedBiweekly = biweeklyTarget; }
-        if (!state.lastCheckedMonthly || state.lastCheckedMonthly < monthlyTarget) { defaultMonthlies.forEach(t => state.monthlies[t] = false); state.lastCheckedMonthly = monthlyTarget; }
-
-        if (!state.biweeklies) state.biweeklies = {}; if (!state.monthlies) state.monthlies = {};
-        defaultDailies.forEach(t => { if (state.dailies[t] === undefined) state.dailies[t] = false; });
-        defaultWeeklies.forEach(t => { if (state.weeklies[t] === undefined) state.weeklies[t] = false; });
-        defaultBiweeklies.forEach(t => { if (state.biweeklies[t] === undefined) state.biweeklies[t] = false; });
-        defaultMonthlies.forEach(t => { if (state.monthlies[t] === undefined) state.monthlies[t] = false; });
-
-        localStorage.setItem(localStorageKey, JSON.stringify(state));
-        renderLists();
-    }
 
         async function pushStateToCloud() {
-        // FIX: Make sure writing updates uses the exact same user-specific storage key
-        const localStorageKey = 'nte_state_' + syncKey;
-        localStorage.setItem(localStorageKey, JSON.stringify(state));
-        
-        if (!supabase) return;
-        
-        try {
-            await supabase.from('nte_sync').upsert(
-                { sync_key: syncKey, state_json: state, updated_at: new Date().toISOString() },
-                { onConflict: 'sync_key' }
-            );
-        } catch(e) { console.error("Cloud push error:", e); }
-    }
-        function toggleTask(category, task, checked) { 
-            state[category][task] = checked; 
+            const localStorageKey = 'nte_state_' + syncKey;
+            localStorage.setItem(localStorageKey, JSON.stringify(state));
+            if (!supabase) return;
+            try {
+                await supabase.from('nte_sync').upsert(
+                    { sync_key: syncKey, state_json: state, updated_at: new Date().toISOString() },
+                    { onConflict: 'sync_key' }
+                );
+            } catch(e) { console.error("Cloud push error:", e); }
+        }
+
+        function toggleTask(category, taskName, checked) { 
+            state[category][taskName] = checked; 
             renderLists(); 
             pushStateToCloud(); 
         }
@@ -276,28 +276,38 @@
         function renderLists() {
             const d = document.getElementById('daily-list'), w = document.getElementById('weekly-list'), b = document.getElementById('biweekly-list'), m = document.getElementById('monthly-list');
             d.innerHTML = ''; w.innerHTML = ''; b.innerHTML = ''; m.innerHTML = '';
-            defaultDailies.forEach((t, i) => d.appendChild(createTaskRow('dailies', t, state.dailies[t], `d-${i}`, 'checked:bg-cyan-500 checked:border-cyan-500')));
-            defaultWeeklies.forEach((t, i) => w.appendChild(createTaskRow('weeklies', t, state.weeklies[t], `w-${i}`, 'checked:bg-purple-500 checked:border-purple-500')));
-            defaultBiweeklies.forEach((t, i) => b.appendChild(createTaskRow('biweeklies', t, state.biweeklies[t], `b-${i}`, 'checked:bg-emerald-500 checked:border-emerald-500')));
-            defaultMonthlies.forEach((t, i) => m.appendChild(createTaskRow('monthlies', t, state.monthlies[t], `m-${i}`, 'checked:bg-amber-500 checked:border-amber-500')));
+            
+            defaultDailies.forEach((t, i) => d.appendChild(createTaskRow('dailies', t, state.dailies[t.name], `d-${i}`, 'checked:bg-cyan-500 checked:border-cyan-500')));
+            defaultWeeklies.forEach((t, i) => w.appendChild(createTaskRow('weeklies', t, state.weeklies[t.name], `w-${i}`, 'checked:bg-purple-500 checked:border-purple-500')));
+            defaultBiweeklies.forEach((t, i) => b.appendChild(createTaskRow('biweeklies', t, state.biweeklies[t.name], `b-${i}`, 'checked:bg-emerald-500 checked:border-emerald-500')));
+            defaultMonthlies.forEach((t, i) => m.appendChild(createTaskRow('monthlies', t, state.monthlies[t.name], `m-${i}`, 'checked:bg-amber-500 checked:border-amber-500')));
         }
 
         function createTaskRow(category, task, isChecked, id, colorClass) {
             const div = document.createElement('div');
             div.className = "flex items-center py-3 justify-between hover:bg-slate-800/40 px-2 rounded-lg transition-colors group";
-            div.innerHTML = `<label class="flex items-center space-x-3 w-full cursor-pointer select-none"><input type="checkbox" id="${id}" ${isChecked ? 'checked' : ''} class="checkbox-custom h-5 w-5 rounded border-slate-700 bg-slate-900/50 text-slate-900 focus:ring-0 focus:ring-offset-0 transition-all appearance-none border checked:after:content-['✓'] checked:after:flex checked:after:justify-center checked:after:text-xs checked:after:font-bold checked:after:text-slate-900 ${colorClass}"><span class="text-slate-200 text-sm font-medium group-hover:text-white transition-colors">${task}</span></label>`;
-            div.querySelector('input').addEventListener('change', (e) => toggleTask(category, task, e.target.checked));
+            
+            // Layout adjusted to flex-col for label elements so subtext sits directly beneath the name.
+            div.innerHTML = `
+                <label class="flex items-start space-x-3 w-full cursor-pointer select-none">
+                    <input type="checkbox" id="${id}" ${isChecked ? 'checked' : ''} class="checkbox-custom mt-0.5 h-5 w-5 rounded border-slate-700 bg-slate-900/50 text-slate-900 focus:ring-0 focus:ring-offset-0 transition-all appearance-none border checked:after:content-['✓'] checked:after:flex checked:after:justify-center checked:after:text-xs checked:after:font-bold checked:after:text-slate-900 ${colorClass}">
+                    <span class="flex flex-col">
+                        <span class="text-slate-200 text-sm font-medium group-hover:text-white transition-colors">${task.name}</span>
+                        ${task.subtext ? `<span class="text-xs text-slate-400 mt-0.5">${task.subtext}</span>` : ''}
+                    </span>
+                </label>
+            `;
+            
+            div.querySelector('input').addEventListener('change', (e) => toggleTask(category, task.name, e.target.checked));
             return div;
         }
 
         initApp(); updateClock();
         setInterval(updateClock, 1000); setInterval(initApp, 30000);
 
-        // Listen for when the user pastes or changes the #hash URL bar manually
         window.addEventListener('hashchange', () => {
-        // Force the app to completely re-initialize with the fresh user key
-        initApp();
-    });
+            initApp();
+        });
     </script>
 </body>
 </html>
