@@ -295,6 +295,7 @@ export function confirmReset() {
         initApp();
     }
 }
+window.confirmReset = confirmReset
 
 // Global execution runtime hooks - Safe Guarded for Testing Environment
 if (typeof window !== 'undefined' && typeof document !== 'undefined' && document.getElementById) {
