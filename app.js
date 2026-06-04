@@ -36,13 +36,19 @@ const defaultMonthlies = [
     { name: "Lost Exchange (Roll Pieces)", subtext: "350 + 350 + 1400 = 2100 Lost Pieces" }
 ];
 
+const defaultBeyondtheRails = [
+    { name: "Clear Floors" }
+];
+
 let state = {
-    dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {},
-    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0
+    dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
+    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0
 };
 
 let syncKey = "";
 const BIWEEKLY_ANCHOR = new Date("2026-06-08T05:00:00-04:00").getTime();
+// Update anchor: June 17, 2026, 6:00 PM ET is 22:00:00 UTC
+const BEYOND_ANCHOR = Date.UTC(2026, 5, 17, 22, 0, 0);
 
 export function getTargetResets() {
     // 1. Grab the exact absolute universal time right now
@@ -82,11 +88,15 @@ export function getTargetResets() {
         finalizedMonthly = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1, 9, 0, 0, 0);
     }
 
+    // New Beyond The Rails Logic (14 day cycle)
+    const beyondTarget = BEYOND_ANCHOR + (Math.floor((currentMs - BEYOND_ANCHOR) / msPerTwoWeeks) * msPerTwoWeeks);
+
     return { 
         dailyTarget, 
         weeklyTarget, 
         biweeklyTarget, 
         monthlyTarget: finalizedMonthly, 
+        beyondTarget,
         nowET: now // Renamed logically internally, but preserves structure compatibility
     };
 }
@@ -94,7 +104,7 @@ export function getTargetResets() {
 // 💡 REFACTOR/EXPORT INDEPENDENT LOGIC FOR EASIER TESTING
 export function checkAndResetState(currentHash, customState = null) {
     const activeState = customState || state;
-    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget } = getTargetResets();
+    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, beyondTarget} = getTargetResets();
     let resetTriggered = false;
 
     if (!activeState.lastCheckedDaily || activeState.lastCheckedDaily < dailyTarget) { 
@@ -114,6 +124,10 @@ export function checkAndResetState(currentHash, customState = null) {
         defaultMonthlies.forEach(t => activeState.monthlies[t.name] = false); 
         activeState.lastCheckedMonthly = monthlyTarget; 
     }
+    if (!activeState.lastCheckedBeyond || activeState.lastCheckedBeyond < beyondTarget) { 
+        defaultBeyondtheRails.forEach(t => activeState.beyond[t.name] = false); 
+        activeState.lastCheckedBeyond = beyondTarget; 
+    }
     return { resetTriggered, tasks: activeState.dailies };
 }
 
@@ -124,13 +138,14 @@ function formatCountdown(ms) {
 }
 
 function updateTimers() {
-    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, nowET } = getTargetResets();
+    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, beyondTarget, nowET} = getTargetResets();
     const currentMs = nowET.getTime();
     document.getElementById('daily-timer').innerText = formatCountdown((dailyTarget + 86400000) - currentMs);
     document.getElementById('weekly-timer').innerText = formatCountdown((weeklyTarget + 604800000) - currentMs);
     document.getElementById('biweekly-timer').innerText = formatCountdown((biweeklyTarget + 1209600000) - currentMs);
     let nm = new Date(monthlyTarget); nm.setMonth(nm.getMonth() + 1);
     document.getElementById('monthly-timer').innerText = formatCountdown(nm.getTime() - currentMs);
+    document.getElementById('beyond-timer').innerText = formatCountdown((beyondTarget + 1209600000) - currentMs);
 }
 
 function updateClock() {
@@ -153,7 +168,7 @@ export async function initApp() {
     
     if (savedState) {
         state = JSON.parse(savedState);
-        ['dailies', 'weeklies', 'biweeklies', 'monthlies'].forEach(cat => {
+        ['dailies', 'weeklies', 'biweeklies', 'monthlies', 'beyond'].forEach(cat => {
             if (state[cat] && typeof state[cat] === 'object' && !Array.isArray(state[cat])) {
                 for (let key in state[cat]) {
                     if (typeof state[cat][key] === 'object' && state[cat][key] !== null) {
@@ -166,8 +181,8 @@ export async function initApp() {
         });
     } else {
         state = {
-            dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {},
-            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0
+            dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
+            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0
         };
     }
 
@@ -186,6 +201,7 @@ export async function initApp() {
                 if (!state.weeklies) state.weeklies = {};
                 if (!state.biweeklies) state.biweeklies = {};
                 if (!state.monthlies) state.monthlies = {};
+                if (!state.beyond) state.beyond = {};
                 localStorage.setItem(localStorageKey, JSON.stringify(state));
             }
         } catch(e) { 
@@ -214,6 +230,7 @@ export async function initApp() {
     defaultWeeklies.forEach(t => { if (state.weeklies[t.name] === undefined) state.weeklies[t.name] = false; });
     defaultBiweeklies.forEach(t => { if (state.biweeklies[t.name] === undefined) state.biweeklies[t.name] = false; });
     defaultMonthlies.forEach(t => { if (state.monthlies[t.name] === undefined) state.monthlies[t.name] = false; });
+    defaultBeyondtheRails.forEach(t => { if (state.beyond[t.name] === undefined) state.beyond[t.name] = false; });
 
     localStorage.setItem(localStorageKey, JSON.stringify(state));
     renderLists();
@@ -249,20 +266,27 @@ function updateProgressBar(category, defaultList, prefix) {
 }
 
 function renderLists() {
-    const d = document.getElementById('daily-list'), w = document.getElementById('weekly-list'), b = document.getElementById('biweekly-list'), m = document.getElementById('monthly-list');
-    if (!d || !w || !b || !m) return; // Escape check for headless test environment
+    const d = document.getElementById('daily-list'), 
+    w = document.getElementById('weekly-list'), 
+    b = document.getElementById('biweekly-list'), 
+    m = document.getElementById('monthly-list'), 
+    btr = document.getElementById('beyond-list');
+
+    if (!d || !w || !b || !m || !btr) return; // Escape check for headless test environment
     
-    d.innerHTML = ''; w.innerHTML = ''; b.innerHTML = ''; m.innerHTML = '';
+    d.innerHTML = ''; w.innerHTML = ''; b.innerHTML = ''; m.innerHTML = ''; btr.innerHTML = '';
     
     defaultDailies.forEach((t, i) => d.appendChild(createTaskRow('dailies', t, state.dailies[t.name], `d-${i}`, 'checked:bg-cyan-500 checked:border-cyan-500')));
     defaultWeeklies.forEach((t, i) => w.appendChild(createTaskRow('weeklies', t, state.weeklies[t.name], `w-${i}`, 'checked:bg-purple-500 checked:border-purple-500')));
     defaultBiweeklies.forEach((t, i) => b.appendChild(createTaskRow('biweeklies', t, state.biweeklies[t.name], `b-${i}`, 'checked:bg-emerald-500 checked:border-emerald-500')));
     defaultMonthlies.forEach((t, i) => m.appendChild(createTaskRow('monthlies', t, state.monthlies[t.name], `m-${i}`, 'checked:bg-amber-500 checked:border-amber-500')));
-
+    defaultBeyondtheRails.forEach((t, i) => btr.appendChild(createTaskRow('beyond', t, state.beyond[t.name], `btr-${i}`, 'checked:bg-rose-500 checked:border-rose-500')));
+    
     updateProgressBar('dailies', defaultDailies, 'daily');
     updateProgressBar('weeklies', defaultWeeklies, 'weekly');
     updateProgressBar('biweeklies', defaultBiweeklies, 'biweekly');
     updateProgressBar('monthlies', defaultMonthlies, 'monthly');
+    updateProgressBar('beyond', defaultBeyondtheRails, 'beyond');
 }
 
 function createTaskRow(category, task, isChecked, id, colorClass) {

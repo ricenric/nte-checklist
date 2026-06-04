@@ -56,7 +56,7 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
     const mockState = { 
       lastCheckedDaily: preResetTime.getTime(), 
       dailies: { "Manage Cafe & Collect Fons": true },
-      weeklies: {}, biweeklies: {}, monthlies: {}
+      weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {}
     };
 
     const result = checkAndResetState('#user-test', mockState);
@@ -73,7 +73,7 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
     const originalState = { 
       lastCheckedDaily: initialTime.getTime(), 
       dailies: { "Manage Cafe & Collect Fons": true },
-      weeklies: {}, biweeklies: {}, monthlies: {}
+      weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {}
     };
 
     // Fast-forward time by 2 minutes, passing 9:00 AM UTC (5:00 AM ET) to hit 9:01 AM UTC
