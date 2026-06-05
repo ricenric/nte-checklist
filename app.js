@@ -321,6 +321,31 @@ export function confirmReset() {
 }
 window.confirmReset = confirmReset
 
+// --- BOND DATA (Exported for Testing) ---
+export const LEVEL_COSTS = {
+    1: 500, 2: 1000, 3: 2000, 4: 3500, 5: 5000, 
+    6: 7000, 7: 9000, 8: 12000, 9: 16000
+};
+
+// --- LOGIC ONLY (No DOM dependencies - Safe to import in tests) ---
+export function calculateBondXP(currentLevel, targetLevel, currentXp, bonusXp, giftsPerDay, xpPerGift) {
+    let totalXpNeeded = 0;
+    if (targetLevel > currentLevel) {
+        const validCurrentXp = Math.min(currentXp, LEVEL_COSTS[currentLevel] || 0);
+        totalXpNeeded += (LEVEL_COSTS[currentLevel] - validCurrentXp);
+        for (let i = currentLevel + 1; i < targetLevel; i++) {
+            totalXpNeeded += LEVEL_COSTS[i];
+        }
+    }
+
+    const remainingXpAfterBonus = Math.max(0, totalXpNeeded - bonusXp);
+    const dailyXp = giftsPerDay * xpPerGift;
+    const daysNeededBase = dailyXp > 0 ? Math.ceil(totalXpNeeded / dailyXp) : (totalXpNeeded === 0 ? 0 : "N/A");
+    const daysNeededWithBonus = dailyXp > 0 ? Math.ceil(remainingXpAfterBonus / dailyXp) : (remainingXpAfterBonus === 0 ? 0 : "N/A");
+
+    return { totalXpNeeded, remainingXpAfterBonus, dailyXp, daysNeededBase, daysNeededWithBonus };
+}
+
 // Global execution runtime hooks - Safe Guarded for Testing Environment
 if (typeof window !== 'undefined' && typeof document !== 'undefined' && document.getElementById) {
     // Only initialize UI loops if we are genuinely running in a live browser tab
@@ -335,4 +360,58 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined' && document
     }
     
     window.addEventListener('hashchange', () => { initApp(); });
+}
+
+window.switchTab = function(tab) {
+    const checklistView = document.getElementById('checklist-view');
+    const calcView = document.getElementById('calculator-view');
+    const btnChecklist = document.getElementById('btn-checklist');
+    const btnCalculator = document.getElementById('btn-calculator');
+
+    if (tab === 'checklist') {
+        checklistView.classList.remove('hidden');
+        calcView.classList.add('hidden');
+        
+        // Update button styles
+        btnChecklist.classList.add('bg-cyan-600', 'text-white');
+        btnChecklist.classList.remove('bg-slate-700', 'text-slate-300');
+        btnCalculator.classList.add('bg-slate-700', 'text-slate-300');
+        btnCalculator.classList.remove('bg-cyan-600', 'text-white');
+    } else {
+        checklistView.classList.add('hidden');
+        calcView.classList.remove('hidden');
+        
+        // Update button styles
+        btnCalculator.classList.add('bg-cyan-600', 'text-white');
+        btnCalculator.classList.remove('bg-slate-700', 'text-slate-300');
+        btnChecklist.classList.add('bg-slate-700', 'text-slate-300');
+        btnChecklist.classList.remove('bg-cyan-600', 'text-white');
+    }
+}
+
+window.runBondCalc = function() {
+    const inputs = {
+        currentLevel: parseInt(document.getElementById('calc-level').value),
+        targetLevel: parseInt(document.getElementById('calc-target').value),
+        currentXp: parseInt(document.getElementById('calc-xp').value),
+        giftsPerDay: parseInt(document.getElementById('calc-gifts').value),
+        xpPerGift: parseInt(document.getElementById('calc-gift-xp').value),
+        bonusXp: parseInt(document.getElementById('calc-bonus-xp').value) || 0
+    };
+
+    const res = calculateBondXP(
+        inputs.currentLevel, inputs.targetLevel, inputs.currentXp, 
+        inputs.bonusXp, inputs.giftsPerDay, inputs.xpPerGift
+    );
+    
+    const resultDiv = document.getElementById('calc-result');
+    resultDiv.classList.remove('hidden');
+    
+    let resultText = `To reach level <strong>${inputs.targetLevel}</strong>, you need <strong>${res.totalXpNeeded.toLocaleString()}</strong> more XP. <br>At ${res.dailyXp} XP/day, it will take approximately <strong>${res.daysNeededBase} days</strong>.`;
+    
+    if (inputs.bonusXp > 0) {
+        resultText += `<br><br>If you use <strong>${inputs.bonusXp.toLocaleString()} XP</strong> worth of unlimited affinity items, your remaining XP is <strong>${res.remainingXpAfterBonus.toLocaleString()}</strong> and days remaining would be <strong>${res.daysNeededWithBonus} days</strong>.`;
+    }
+    
+    document.getElementById('calc-output').innerHTML = resultText;
 }
