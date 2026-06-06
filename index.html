@@ -23,7 +23,7 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 self-start sm:self-center">
-                <button onclick="confirmReset()" class="text-xs font-mono px-2.5 py-1 rounded border bg-rose-950/20 border-rose-900/50 text-rose-400 hover:bg-rose-900/30 transition-all cursor-pointer">
+                <button id="reset-button" class="text-xs font-mono px-2.5 py-1 rounded border bg-rose-950/20 border-rose-900/50 text-rose-400 hover:bg-rose-900/30 transition-all cursor-pointer">
                     ⚠ Clear Data
                 </button>
                 <div id="sync-status" class="text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-slate-400 flex items-center gap-1.5">
@@ -195,7 +195,7 @@
                         <input type="number" id="calc-bonus-xp" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm">
                     </div>
                 </div>
-                <button onclick="runBondCalc()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded transition-all">Calculate</button>
+                <button id="calc-button" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded transition-all">Calculate</button>
                 
                 <div id="calc-result" class="mt-4 p-3 bg-slate-900/50 rounded border border-slate-700 hidden">
                     <p id="calc-output" class="text-sm text-slate-200"></p>
@@ -204,6 +204,6 @@
         </div>
 
 
-    <script type="module" src="app.js"></script>
+    <script type="module" src="./js/app.js"></script>
 </body>
 </html>
