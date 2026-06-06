@@ -20,7 +20,7 @@ jobs:
           cache: 'npm'
 
       - name: Install testing dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Run Supabase Endpoint Assertion
         run: npm test

@@ -8,10 +8,10 @@ A high-performance, responsive web-based companion app designed to track daily, 
 
 * [🛠️ Tech Stack & Architecture](#️-tech-stack--architecture)
 * [🚀 Core Features](#-core-features)
-* [🗄️ Database Table Setup](#️-database-table-setup)
-* [📡 Local Environment Execution](#-local-environment-execution)
-* [🛡️ Security Architecture Notice](#️-security-architecture-notice)
-* [🧪 Testing & Continuous Integration](#-testing--continuous-integration)
+* [🗄️ Database Table Setup](#-database-table-setup)
+* [📡 Local Development Setup](#local-development-setup)
+* [🛡️ Security Architecture Notice](#-security-architecture-notice)
+* [🧪 Development & Quality Assurance](#development--quality-assurance)
 
 ---
 
@@ -20,7 +20,7 @@ A high-performance, responsive web-based companion app designed to track daily, 
 * **Frontend Framework:** Tailwind CSS v4 (via JIT compiler)
 * **Database & Sync Engine:** Supabase JS Client Ecosystem (UMD Modern Bundle)
 * **Storage Layer:** Hybrid Cloud `upsert` + Isolated Device Cache (`localStorage`)
-* **State Machine:** Event-driven Javascript with automated timezone-locked reset loops
+* **State Machine:** Event-driven architecture with Supabase Realtime synchronization and automated timezone-locked reset loops
 
 ---
 
@@ -36,7 +36,7 @@ The application isolates data on a per-user basis. By appending a unique `#user-
 This prevents account tracking overlapping when managing multiple alt accounts or profiles on the same device.
 
 ### 3. Dynamic Profile Hot-Swapping
-Features a hardware-level `hashchange` listener. Pasting a different friend or alt-account tracking URL into an open browser bar swaps the internal memory states and refreshes the database channels instantly without requiring a hard reload.
+Features an optimized hashchange listener that triggers a deterministic teardown-and-rebuild cycle. The application explicitly unsubscribes from existing Realtime channels before re-initializing to the new sync key, ensuring zero "zombie" connections and preventing race conditions during account switching.
 
 ### 4. Game Clock Synchronization
 Calculates precision countdown boundaries tied directly to the **5:00 AM Eastern Time (ET)** server reset window, handling shifts dynamically across Daily, Weekly (Monday), Bi-Weekly, and Monthly resets.
@@ -80,21 +80,24 @@ alter publication supabase_realtime add table nte_sync;
 
 ---
 
-Markdown
-### 🐍 Local Environment Execution (Python Server Quick Start)
+### 📡 Local Development Setup
 
-If you have Python installed, you can spin up the environment instantly without any installations:
+This project uses Vite for local development. This enables Hot Module Replacement (HMR) and automatically resolves module dependencies for a seamless development experience.
 
-1. Open your terminal or command prompt.
-2. Navigate (`cd`) into the directory containing your project's `index.html`.
-3. Execute the server command:
-   ```bash
-   python -m http.server 8080
-   ```
-(Note: Use py -m http.server 8080 on some Windows setups, or python -m SimpleHTTPServer 8080 if using legacy Python 2).
-4. Open your browser and head to http://localhost:8080.
+1. Install dependencies:
 
----
+```bash
+npm install
+```
+
+2. Start the dev server:
+
+```bash
+npm run dev
+```
+
+3. Open the URL displayed in your terminal
+
 
 ## 🛡️ Security Architecture Notice
 
@@ -102,9 +105,10 @@ This code exposes a public publishable key token (`sb_publishable_...`) directly
 
 This is 100% secure and safe to push to public GitHub repositories. Supabase publishable public keys do not grant admin access to database structures. Because the table is bound by strict Row Level Security (RLS) policies, it is impossible for an outside actor to maliciously read, alter, or extract global data payloads unless they possess your randomly generated, 18-character browser URL hash parameter.
 
----
 
-## 🧪 Testing & Continuous Integration
+## Development & Quality Assurance
+
+### 🧪 Unit Testing & Continuous Integration
 
 This project uses **Vitest** for unit and integration testing, paired with **GitHub Actions** for continuous integration (CI) to ensure database connectivity and state stability.
 
@@ -114,3 +118,22 @@ To run the test suite locally, ensure your dependencies are installed and execut
 ```bash
 npm install
 npm test
+```
+
+### 🔍 Code Quality & Linting
+
+This project utilizes ESLint with the modern Flat Config format to maintain high code standards and prevent common runtime errors.
+
+Running the Linter:
+To check your codebase for errors or stylistic inconsistencies, run:
+
+```bash
+npm run lint
+```
+
+Automatic Fixes:
+To have ESLint automatically resolve fixable issues (like spacing or semicolon consistency), run:
+
+```bash
+npx eslint . --fix
+```
