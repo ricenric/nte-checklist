@@ -4,21 +4,20 @@ import { supabase } from '../supabaseClient.js';
 export const defaultDailies = [
     { name: "Manage Cafe & Collect Fons", subtext: "Update Cafe with new trending items" },
     { name: "Make a Wish at Nacupeda's Pool" },
-    { name: "Pray at the Fortune Shades Tree" },
-    { name: "Bond Event (Movies, Ferris Wheel)", subtext: "Once per day?" },
+    { name: "Pray at the Fortune Shades Tree", subtext: "It's all random!"},
+    { name: "Bond Event (Movies, Ferris Wheel)", subtext: "Once per day? Or per character?" },
     { name: "Witch's House Daily Fortune Readings" },
     { name: "Give Gifts to Characters (Max 10)" },
-    { name: "Get Daily Free Module" },
-    { name: "Farm Anomaly Furniture Materials", subtext: "Vending Machine, Cursed Sword, Teddy Bear" },
-    { name: "Farm Fons with Chiz" },
+    { name: "Get Daily Free Apartment Materials", subtext: "Module, Beetle Coins, Fluffy Cotton" },
+    { name: "Farm Materials", subtext: "Anomaly Furniture, Monster Upgrade Materials" },
     { name: "Beat Up Civilians for Items", subtext: "Lost Wallet, Briefcases, Lunch Bags" }
 ];
 export const defaultWeeklies = [
-    { name: "Defeat 3 Weekly Bosses (Anomaly Pilgrimage)" },
-    { name: "Burn all City Stamina" },
+    { name: "Defeat 3 Weekly Bosses", subtext: "Anomaly Pilgrimage" },
+    { name: "Burn All City Stamina" },
     { name: "Steal DSD Toys", subtext: "Bridge Crossings (West + East), Miguel District (West), New Herland District" },
     { name: "Clear Special Delivery Commission (Old Mailbox)" },
-    { name: "Enter Realm of Greed & defeat Mammon Boss", subtext: "Auction first to upgrade" },
+    { name: "Enter Realm of Greed & defeat Mammon Boss", subtext: "Participate in auction first to upgrade" },
     { name: "Visit Ebisu's Auction House", subtext: "Prioritize Covetous Coins for Mammon Upgrade" },
     { name: "Complete Weekly Battle Pass Missions", subtext: "Daily play usually means overcapping on Battle Pass" }
 ];
@@ -26,12 +25,12 @@ export const defaultBiweeklies = [
     { name: "Pink Paws Heist", subtext: "Cap 1 million Fons" }
 ];
 export const defaultMonthlies = [
-    { name: "Hunter Exchange" },
+    { name: "Hunter Exchange", subtext: "Prioritize Annulith items - Lost Keys and Dice" },
     { name: "Lost Exchange (Roll Pieces)", subtext: "350 + 350 + 1400 = 2100 Lost Pieces" }
 ];
 
 export const defaultBeyondtheRails = [
-    { name: "Clear Floors" }
+    { name: "Clear All Floors", subtext: "As many as possible at least!" }
 ];
 
 export let state = {
