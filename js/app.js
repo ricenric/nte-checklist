@@ -1,5 +1,5 @@
 import { runBondCalc } from './features/calculator.js';
-import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange } from './features/checklist.js';
+import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets } from './features/checklist.js';
 import { supabase } from './supabaseClient.js';
 
 window.switchTab = function(tab) {
@@ -34,9 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClock();
     updateTimers();
 
-    // 2. Setup Intervals
-    setInterval(updateClock, 1000);
-    setInterval(updateTimers, 1000);
+    setInterval(() => {
+        updateClock();
+        updateTimers();
+        pollForResets(); // Actively checks for resets while the tab is open
+    }, 1000);
 
     const calcBtn = document.getElementById('calc-button');
     if (calcBtn) {

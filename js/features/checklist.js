@@ -112,7 +112,7 @@ export function confirmReset() {
         localStorage.removeItem(localStorageKey);
         state = {
             dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
-            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0
+            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0
         };
         pushStateToCloud();
         initApp();
@@ -182,9 +182,20 @@ export async function initApp(supabaseClient, force = false) {
             { event: '*', schema: 'public', table: 'nte_sync', filter: `sync_key=eq.${syncKey}` }, 
             (payload) => {
                 if (payload.new?.state_json) {
-                    state = payload.new.state_json;
+                    // 1. Run the incoming real-time broadcast through the reset check
+                    const cloudCheck = checkAndResetState(payload.new.state_json, { 
+                        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
+                    });
+
+                    // 2. Assign the safely checked state
+                    state = cloudCheck.state;
                     localStorage.setItem(localStorageKey, JSON.stringify(state));
                     renderLists();
+                    
+                    // 3. If a stale state was pushed to us, correct the record in the cloud
+                    if (cloudCheck.resetTriggered) {
+                        pushStateToCloud();
+                    }
                 }
             }
         );
@@ -213,9 +224,20 @@ export async function initApp(supabaseClient, force = false) {
                 }
 
                 if (data?.state_json) {
-                    state = data.state_json;
+                    // 1. Run the incoming cloud data through the reset check first!
+                    const cloudCheck = checkAndResetState(data.state_json, { 
+                        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
+                    });
+
+                    // 2. Assign the safely checked state
+                    state = cloudCheck.state;
                     localStorage.setItem(localStorageKey, JSON.stringify(state));
                     renderLists();
+
+                    // 3. If the cloud state was stale (yesterday's data) and forced a reset, push it back up
+                    if (cloudCheck.resetTriggered) {
+                        pushStateToCloud();
+                    }
                 } else {
                     console.debug("No data found for sync_key:", syncKey); // ADD THIS
                 }
@@ -270,4 +292,17 @@ export function updateTimers() {
     document.getElementById('biweekly-timer').innerText = timers.biweekly;
     document.getElementById('monthly-timer').innerText = timers.monthly;
     document.getElementById('beyond-timer').innerText = timers.beyond;
+}
+
+export function pollForResets() {
+    const check = checkAndResetState(state, { 
+        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
+    });
+    
+    if (check.resetTriggered) {
+        state = check.state;
+        localStorage.setItem('nte_state_' + syncKey, JSON.stringify(state));
+        renderLists();
+        pushStateToCloud();
+    }
 }
