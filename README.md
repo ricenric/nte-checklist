@@ -137,3 +137,17 @@ To have ESLint automatically resolve fixable issues (like spacing or semicolon c
 ```bash
 npx eslint . --fix
 ```
+
+### 🛠 Debugging Utilities
+
+I use the following script to simulate time passing during local development to verify the reset logic.
+
+How to use:
+1. Open your browser **Developer Tools** (`F12`).
+2. Navigate to the **Console** tab.
+3. Copy and paste the timeTravelReset() function from scripts/dev-tools.js into the console and hit `Enter`
+
+**Note**: If you want to do this multiple times, you must hit the "Clear Data" button before doing so, or jump ahead in more days by incrementing the
+daysToJump variable. In order to simulate the longer resets, change that variable to the appropriate days needed for the respective reset. 
+Otherwise, now  that your browser clock is back to normal, your app checks the database and says: "Wait, my last reset was in the future. I don't need to reset again yet."
+and you must wait for the real world to catch up to the time travel function.
