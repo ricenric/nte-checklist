@@ -54,4 +54,16 @@ describe('Bond Math Logic Validation (Hard-coded Regression)', () => {
     const res = calculateBondXP(1, 2, 0, 0, 0, 100);
     expect(res.daysNeededBase).toBe("N/A");
   });
+
+  it('should correctly apply the Daily Date +200 XP bonus', () => {
+    // Level 1 to 2 requires 500 XP.
+    // 3 gifts * 100 XP = 300 XP.
+    // Daily Date (true) = +200 XP.
+    // Total Daily XP = 500. It should take exactly 1 day instead of 2.
+    const res = calculateBondXP(1, 2, 0, 0, 3, 100, true);
+    
+    expect(res.totalXpNeeded).toBe(500);
+    expect(res.dailyXp).toBe(500);
+    expect(res.daysNeededBase).toBe(1);
+  });
 });
