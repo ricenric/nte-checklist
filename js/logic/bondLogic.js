@@ -5,18 +5,24 @@ export const LEVEL_COSTS = {
 };
 
 // 2. The Pure Math Engine (Logic)
-export function calculateBondXP(currentLevel, targetLevel, currentXp, bonusXp, giftsPerDay, xpPerGift) {
+export function calculateBondXP(currentLevel, targetLevel, currentXp, bonusXp, giftsPerDay, xpPerGift, hasDailyDate) {
     let totalXpNeeded = 0;
     if (targetLevel > currentLevel) {
         const validCurrentXp = Math.min(currentXp, LEVEL_COSTS[currentLevel] || 0);
         totalXpNeeded += (LEVEL_COSTS[currentLevel] - validCurrentXp);
         for (let i = currentLevel + 1; i < targetLevel; i++) {
-            totalXpNeeded += LEVEL_COSTS[i];
+            totalXpNeeded += LEVEL_COSTS[i] || 0;
         }
     }
 
     const remainingXpAfterBonus = Math.max(0, totalXpNeeded - bonusXp);
-    const dailyXp = giftsPerDay * xpPerGift;
+    
+    // Calculate daily XP and inject the +200 flat bonus if the checkbox is checked
+    let dailyXp = giftsPerDay * xpPerGift;
+    if (hasDailyDate) {
+        dailyXp += 200;
+    }
+
     const daysNeededBase = dailyXp > 0 ? Math.ceil(totalXpNeeded / dailyXp) : (totalXpNeeded === 0 ? 0 : "N/A");
     const daysNeededWithBonus = dailyXp > 0 ? Math.ceil(remainingXpAfterBonus / dailyXp) : (remainingXpAfterBonus === 0 ? 0 : "N/A");
 
