@@ -35,7 +35,8 @@ export const defaultBeyondtheRails = [
 
 export let state = {
     dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
-    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0
+    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0,
+    ui: { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false } // Added UI state (false = expanded)
 };
 
 export function updateProgressBar(category, defaultList, prefix) {
@@ -92,6 +93,9 @@ export function renderLists() {
     updateProgressBar('biweeklies', defaultBiweeklies, 'biweekly');
     updateProgressBar('monthlies', defaultMonthlies, 'monthly');
     updateProgressBar('beyond', defaultBeyondtheRails, 'beyond');
+
+    // Restoration: Re-apply the opening/closing animations based on current UI state
+    applyUIStates()
 }
 
 export function toggleTask(category, taskName, checked) {    
@@ -111,7 +115,8 @@ export function confirmReset() {
         localStorage.removeItem(localStorageKey);
         state = {
             dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
-            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0
+            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0,
+            ui: { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false } // Added UI state (false = expanded)
         };
         pushStateToCloud();
         initApp();
@@ -140,22 +145,43 @@ let syncKey = "";
 // 1. Declare a variable to hold the channel at the top level
 export let activeChannel = null;
 
-export async function initApp(supabaseClient, force = false) {
-    console.debug("initApp called. Active channel exists:", !!activeChannel, "Stack trace:", new Error().stack);    // 1. Determine Sync Key
+export async function initApp(supabaseClient) {
+    console.debug("initApp called. Active channel exists:", !!activeChannel, "Stack trace:", new Error().stack);
+    
+    // 1. Determine Sync Key
     const newSyncKey = window.location.hash || "#user-" + Math.random().toString(36).substring(2, 11) + Math.random().toString(36).substring(2, 11);
     
     if (!supabaseClient) {
         console.debug("DEBUG: initApp called, but supabaseClient is UNDEFINED!");
-        // Fallback to local is already happening; this will prove why.
     }
 
-    // If the hash was missing or invalid, set it
     if (window.location.hash !== newSyncKey) {
         window.location.hash = newSyncKey;
     }
 
-    // 2. Teardown logic
-    if (activeChannel && (force || syncKey !== newSyncKey)) {
+    const channelName = `checklist-${newSyncKey.replace('#', '')}`;
+
+    // 2. AGGRESSIVE TEARDOWN: Clear old channels from Supabase memory
+    if (supabaseClient) {
+        try {
+            // First, if we tracked an active channel object, remove it
+            if (activeChannel) {
+                await supabaseClient.removeChannel(activeChannel);
+                activeChannel = null;
+            }
+            
+            // Second, check Supabase's internal array for any cached channel matching this name
+            // This prevents rapid double-hash changes from finding a lingering channel instance
+            const existingChannel = supabaseClient.channels.find(ch => ch.topic === `realtime:${channelName}` || ch.name === channelName);
+            if (existingChannel) {
+                console.debug(`Found lingering cached channel [${channelName}], forcing removal...`);
+                await supabaseClient.removeChannel(existingChannel);
+            }
+        } catch (e) {
+            console.debug("Error tearing down channel cache:", e);
+        }
+    } else if (activeChannel) {
+        // Fallback if client isn't passed
         await activeChannel.unsubscribe();
         activeChannel = null;
     }
@@ -170,10 +196,11 @@ export async function initApp(supabaseClient, force = false) {
         lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0
     };
 
-    // 4. Realtime Setup (Order matters: Create -> Listen -> Subscribe)
+    // 4. Realtime Setup
     if (supabaseClient) {
-        console.debug("Attempting cloud sync...");
-        const channel = supabaseClient.channel('custom-all-channel');
+        console.debug(`Attempting cloud sync for channel: ${channelName}`);
+        // This is guaranteed to be a completely fresh channel instance now
+        const channel = supabaseClient.channel(channelName);
 
         // MUST register listener BEFORE subscribing
         channel.on(
@@ -181,17 +208,14 @@ export async function initApp(supabaseClient, force = false) {
             { event: '*', schema: 'public', table: 'nte_sync', filter: `sync_key=eq.${syncKey}` }, 
             (payload) => {
                 if (payload.new?.state_json) {
-                    // 1. Run the incoming real-time broadcast through the reset check
                     const cloudCheck = checkAndResetState(payload.new.state_json, { 
                         defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
                     });
 
-                    // 2. Assign the safely checked state
                     state = cloudCheck.state;
                     localStorage.setItem(localStorageKey, JSON.stringify(state));
                     renderLists();
                     
-                    // 3. If a stale state was pushed to us, correct the record in the cloud
                     if (cloudCheck.resetTriggered) {
                         pushStateToCloud();
                     }
@@ -201,46 +225,42 @@ export async function initApp(supabaseClient, force = false) {
 
         // Subscribe now
         channel.subscribe(async (status) => {
-            console.debug("Channel subscription status:", status); // ADD THIS
+            console.debug("Channel subscription status:", status);
             if (status === 'SUBSCRIBED') {
                 activeChannel = channel;
 
-                // 1. UPDATE THE UI HERE
                 const statusDiv = document.getElementById('sync-status');
                 if (statusDiv) {
                     statusDiv.innerHTML = `
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span> 
                             <span class="truncate max-w-[140px] sm:max-w-[200px]" title="Cloud-Synced (${syncKey})">Cloud-Synced (${syncKey})</span>
                         `;
-                    statusDiv.className = "text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-emerald-400 flex items-center gap-1.5 min-w-0";                }
+                    statusDiv.className = "text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-emerald-400 flex items-center gap-1.5 min-w-0";                
+                }
                 
-                // Fetch latest cloud state to ensure accuracy
                 const { data, error } = await supabaseClient.from('nte_sync')
                     .select('state_json')
                     .eq('sync_key', syncKey)
                     .maybeSingle();
 
                 if (error) {
-                    console.debug("Fetch error:", error); // ADD THIS
+                    console.debug("Fetch error:", error);
                 }
 
                 if (data?.state_json) {
-                    // 1. Run the incoming cloud data through the reset check first!
                     const cloudCheck = checkAndResetState(data.state_json, { 
                         defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
                     });
 
-                    // 2. Assign the safely checked state
                     state = cloudCheck.state;
                     localStorage.setItem(localStorageKey, JSON.stringify(state));
                     renderLists();
 
-                    // 3. If the cloud state was stale (yesterday's data) and forced a reset, push it back up
                     if (cloudCheck.resetTriggered) {
                         pushStateToCloud();
                     }
                 } else {
-                    console.debug("No data found for sync_key:", syncKey); // ADD THIS
+                    console.debug("No data found for sync_key:", syncKey);
                 }
             }
         });
@@ -252,7 +272,6 @@ export async function initApp(supabaseClient, force = false) {
     });
     state = result.state;
 
-    // Ensure all categories exist
     ['dailies', 'weeklies', 'biweeklies', 'monthlies', 'beyond'].forEach(cat => {
         if (!state[cat] || typeof state[cat] !== 'object') state[cat] = {};
     });
@@ -265,9 +284,6 @@ export async function initApp(supabaseClient, force = false) {
 export async function handleSyncKeyChange(supabaseClient) {
     const newKey = window.location.hash;
     if (newKey === syncKey) return; // Do nothing if hash hasn't actually changed
-
-    // Unsubscribe ONLY
-    if (activeChannel) await activeChannel.unsubscribe();
     
     // Now call a simplified re-init
     await initApp(supabaseClient);
@@ -306,4 +322,39 @@ export function pollForResets() {
         renderLists();
         pushStateToCloud();
     }
+}
+
+export function toggleCategory(category) {
+    // Ensure older accounts get the UI property seamlessly
+    if (!state.ui) state.ui = { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false };
+    
+    // Flip the boolean for the specific category
+    state.ui[category] = !state.ui[category];
+    
+    applyUIStates();
+    pushStateToCloud(); // Instantly saves your layout preference to your hash
+}
+
+export function applyUIStates() {
+    const categories = ['daily', 'weekly', 'biweekly', 'monthly', 'beyond'];
+    
+    categories.forEach(cat => {
+        const isCollapsed = state.ui?.[cat];
+        const contentEl = document.getElementById(`content-${cat}`);
+        const arrowEl = document.getElementById(`arrow-${cat}`);
+        
+        if (contentEl && arrowEl) {
+            if (isCollapsed) {
+                // Collapse: Set grid row to 0
+                contentEl.classList.remove('grid-rows-[1fr]');
+                contentEl.classList.add('grid-rows-[0fr]');
+                arrowEl.classList.add('rotate-180');
+            } else {
+                // Expand: Set grid row to 1 fraction
+                contentEl.classList.remove('grid-rows-[0fr]');
+                contentEl.classList.add('grid-rows-[1fr]');
+                arrowEl.classList.remove('rotate-180');
+            }
+        }
+    });
 }

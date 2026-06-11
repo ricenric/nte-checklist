@@ -1,5 +1,5 @@
 import { runBondCalc } from './features/calculator.js';
-import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets } from './features/checklist.js';
+import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets, toggleCategory } from './features/checklist.js';
 import { supabase } from './supabaseClient.js';
 
 window.switchTab = function(tab) {
@@ -56,3 +56,6 @@ window.addEventListener('hashchange', async () => {
     // This is the correct way to re-init when the user clicks a new link
     handleSyncKeyChange(supabase);
 });
+
+// Expose to window for inline HTML onclick attributes
+window.toggleCategory = toggleCategory;
