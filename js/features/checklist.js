@@ -208,9 +208,11 @@ export async function initApp(supabaseClient, force = false) {
                 // 1. UPDATE THE UI HERE
                 const statusDiv = document.getElementById('sync-status');
                 if (statusDiv) {
-                    statusDiv.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Cloud-Synced (${syncKey})`;
-                    statusDiv.className = "text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-emerald-400 flex items-center gap-1.5";
-                }
+                    statusDiv.innerHTML = `
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span> 
+                            <span class="truncate max-w-[140px] sm:max-w-[200px]" title="Cloud-Synced (${syncKey})">Cloud-Synced (${syncKey})</span>
+                        `;
+                    statusDiv.className = "text-xs font-mono px-2 py-1 rounded border bg-slate-800 border-slate-700 text-emerald-400 flex items-center gap-1.5 min-w-0";                }
                 
                 // Fetch latest cloud state to ensure accuracy
                 const { data, error } = await supabaseClient.from('nte_sync')
