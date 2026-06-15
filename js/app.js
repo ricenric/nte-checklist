@@ -1,54 +1,137 @@
 import { runBondCalc } from './features/calculator.js';
 import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets, toggleCategory } from './features/checklist.js';
+import { renderCharacterCards, filterCharacters, generateCharacterLinks, setElementFilter, autoFillElementBadges, applyRarityStyles } from './logic/guideLogic.js'
 import { supabase } from './supabaseClient.js';
 
-window.switchTab = function(tab) {
-    const checklistView = document.getElementById('checklist-view');
-    const calcView = document.getElementById('calculator-view');
-    const btnChecklist = document.getElementById('btn-checklist');
-    const btnCalculator = document.getElementById('btn-calculator');
+/*
+ ==========================================
+   SWITCHING TABS LOGIC
+ ==========================================
+*/
+window.switchTab = function(activeTabId) {
+    // 1. Define all our views and buttons in one place
+    const tabs = ['checklist', 'guides', 'calculator'];
+    
+    tabs.forEach(tab => {
+        const viewEl = document.getElementById(`${tab}-view`);
+        const btnEl = document.getElementById(`btn-${tab}`);
+        
+        if (!viewEl || !btnEl) return; // Safety check
 
-    if (tab === 'checklist') {
-        checklistView.classList.remove('hidden');
-        calcView.classList.add('hidden');
-        
-        // Update button styles
-        btnChecklist.classList.add('bg-cyan-600', 'text-white');
-        btnChecklist.classList.remove('bg-slate-700', 'text-slate-300');
-        btnCalculator.classList.add('bg-slate-700', 'text-slate-300');
-        btnCalculator.classList.remove('bg-cyan-600', 'text-white');
-    } else {
-        checklistView.classList.add('hidden');
-        calcView.classList.remove('hidden');
-        
-        // Update button styles
-        btnCalculator.classList.add('bg-cyan-600', 'text-white');
-        btnCalculator.classList.remove('bg-slate-700', 'text-slate-300');
-        btnChecklist.classList.add('bg-slate-700', 'text-slate-300');
-        btnChecklist.classList.remove('bg-cyan-600', 'text-white');
-    }
+        if (tab === activeTabId) {
+            // Activate this tab
+            viewEl.classList.remove('hidden');
+            btnEl.classList.add('bg-cyan-600', 'text-white');
+            btnEl.classList.remove('bg-slate-700', 'text-slate-300');
+        } else {
+            // Deactivate other tabs
+            viewEl.classList.add('hidden');
+            btnEl.classList.add('bg-slate-700', 'text-slate-300');
+            btnEl.classList.remove('bg-cyan-600', 'text-white');
+        }
+    });
 }
 
+/*
+ ==========================================
+   ON PAGE LOAD SECTION
+ ==========================================
+*/
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Initiate App and connect to db
     initApp(supabase);
+    // Daily Checklist
     updateClock();
     updateTimers();
+    // Character Guides
+    renderCharacterCards();
+    generateCharacterLinks();
+    autoFillElementBadges();
+    applyRarityStyles();
+    
+    // Character Guides Functions
+    // 1. Handle element filter buttons
+    const filterContainer = document.getElementById('element-filters');
+    if (filterContainer) {
+        filterContainer.addEventListener('click', (event) => {
+            const btn = event.target.closest('.filter-btn');
+            if (!btn) return;
 
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove(
+                    'active',
+                    'bg-cyan-600',
+                    'ring-2',
+                    'ring-cyan-400'
+                );
+
+                b.classList.add('bg-slate-700');
+            });
+
+            btn.classList.remove('bg-slate-700');
+
+            btn.classList.add(
+                'active',
+                'bg-cyan-600',
+                'ring-2',
+                'ring-cyan-400'
+            );
+
+            setElementFilter(btn.dataset.target);
+        });
+    }
+
+    // Wire up the live search bar
+    const searchInput =
+        document.getElementById('character-search');
+
+    const clearBtn =
+        document.getElementById('clear-search');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', e => {
+            const value = e.target.value;
+
+            filterCharacters(value);
+
+            clearBtn?.classList.toggle(
+                'hidden',
+                value.length === 0
+            );
+        });
+    }
+
+    if (clearBtn && searchInput) {
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+
+            filterCharacters('');
+
+            clearBtn.classList.add('hidden');
+
+            searchInput.focus();
+        });
+    }
+
+    // Checklist Functions
     setInterval(() => {
         updateClock();
         updateTimers();
         pollForResets(); // Actively checks for resets while the tab is open
     }, 1000);
 
+    const resetBtn = document.getElementById('reset-button');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', confirmReset);
+    }
+
+    // Bond XP Calculator functions
     const calcBtn = document.getElementById('calc-button');
     if (calcBtn) {
         calcBtn.addEventListener('click', runBondCalc);
     }
 
-    const resetBtn = document.getElementById('reset-button');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', confirmReset);
-    }
 });
 
 // 1. Centralized Hash Change Handler (The ONLY one)
