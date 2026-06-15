@@ -74,8 +74,15 @@ export function checkAndResetState(activeState, config) {
         activeState.lastCheckedMonthly = monthlyTarget; 
     }
     if (!activeState.lastCheckedBeyond || activeState.lastCheckedBeyond < beyondTarget) { 
-        defaultBeyondtheRails.forEach(t => activeState.beyond[t.name] = false); 
+        const isFirstTime = !activeState.lastCheckedBeyond; // Track if this is brand new
+        
+        activeState.beyond = { ...defaultBeyondtheRails }; 
         activeState.lastCheckedBeyond = beyondTarget; 
+        
+        // Only trigger a UI refresh (resetTriggered) if this wasn't just an initial load
+        if (!isFirstTime) {
+            resetTriggered = true; 
+        }
     }
     return { resetTriggered, state: activeState };
 }

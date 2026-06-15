@@ -29,9 +29,7 @@ export const defaultMonthlies = [
     { name: "Lost Exchange (Roll Pieces)", subtext: "350 + 350 + 1400 = 2100 Lost Pieces" }
 ];
 
-export const defaultBeyondtheRails = [
-    { name: "Clear All Floors", subtext: "As many as possible at least!" }
-];
+export const defaultBeyondtheRails = { currentFloor: 1, challenges: 0 };
 
 export let state = {
     dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
@@ -70,8 +68,7 @@ export function renderLists() {
         'daily-list': { category: 'dailies', list: defaultDailies, color: 'checked:bg-cyan-500' },
         'weekly-list': { category: 'weeklies', list: defaultWeeklies, color: 'checked:bg-purple-500' },
         'biweekly-list': { category: 'biweeklies', list: defaultBiweeklies, color: 'checked:bg-emerald-500' },
-        'monthly-list': { category: 'monthlies', list: defaultMonthlies, color: 'checked:bg-amber-500' },
-        'beyond-list': { category: 'beyond', list: defaultBeyondtheRails, color: 'checked:bg-rose-500' }
+        'monthly-list': { category: 'monthlies', list: defaultMonthlies, color: 'checked:bg-amber-500' }
     };
 
     Object.keys(containers).forEach(id => {
@@ -92,7 +89,7 @@ export function renderLists() {
     updateProgressBar('weeklies', defaultWeeklies, 'weekly');
     updateProgressBar('biweeklies', defaultBiweeklies, 'biweekly');
     updateProgressBar('monthlies', defaultMonthlies, 'monthly');
-    updateProgressBar('beyond', defaultBeyondtheRails, 'beyond');
+    renderBeyond();
 
     // Restoration: Re-apply the opening/closing animations based on current UI state
     applyUIStates()
@@ -139,6 +136,66 @@ export function createTaskRow(category, task, isChecked, id, colorClass) {
     
     div.querySelector('input').addEventListener('change', (e) => toggleTask(category, task.name, e.target.checked));
     return div;
+}
+
+export function updateBeyondChallenges(changeAmount) {
+    if (!state.beyond || typeof state.beyond !== 'object') {
+        state.beyond = { ...defaultBeyondtheRails };
+    }
+    
+    let newChallenges = (state.beyond.challenges || 0) + changeAmount;
+    if (newChallenges < 0) newChallenges = 0;
+    if (newChallenges > 36) newChallenges = 36;
+
+    state.beyond.challenges = newChallenges;
+    renderBeyond();
+    pushStateToCloud();
+}
+
+export function updateBeyondFloor(floorValue) {
+    if (!state.beyond || typeof state.beyond !== 'object') {
+        state.beyond = { ...defaultBeyondtheRails };
+    }
+
+    state.beyond.currentFloor = parseInt(floorValue, 10) || 1;
+    renderBeyond();
+    pushStateToCloud();
+}
+
+export function renderBeyond() {
+    if (!state.beyond || typeof state.beyond !== 'object') {
+        state.beyond = { ...defaultBeyondtheRails };
+    }
+
+    const challenges = typeof state.beyond.challenges === 'number' ? state.beyond.challenges : 0;
+    const currentFloor = typeof state.beyond.currentFloor === 'number' ? state.beyond.currentFloor : 1;
+    const percentage = Math.round((challenges / 36) * 100);
+
+    // Update overall category tracking progress bar
+    const bar = document.getElementById('beyond-progress-bar');
+    const text = document.getElementById('beyond-progress-text');
+    if (bar && text) {
+        bar.style.width = `${percentage}%`;
+        text.innerText = `${percentage}% (${challenges}/36)`;
+    }
+
+    // Synchronize select dropdown position with the state
+    const floorSelect = document.getElementById('rails-floor-select');
+    if (floorSelect) {
+        floorSelect.value = currentFloor;
+    }
+
+    // Update text node challenge value
+    const challengesText = document.getElementById('rails-challenges-text');
+    if (challengesText) {
+        if (challenges >= 36) {
+            challengesText.innerText = `All Challenges Cleared! (36/36)`;
+            challengesText.className = 'text-xs text-rose-400 font-medium whitespace-nowrap';
+        } else {
+            challengesText.innerText = `${challenges}/36 Challenges Completed`;
+            challengesText.className = 'text-xs text-slate-400 font-medium whitespace-nowrap';
+        }
+    }
 }
 
 let syncKey = "";

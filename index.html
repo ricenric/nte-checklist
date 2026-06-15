@@ -119,9 +119,48 @@
 
                         <div id="content-beyond" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
                             <div class="overflow-hidden">
-                                <div id="beyond-list" class="w-full divide-y divide-slate-800 pt-1"></div>
+                                <div class="w-full pt-1">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 px-2 hover:bg-slate-800/40 rounded-lg transition-colors group gap-3">
+                                        
+                                        <div class="flex items-center gap-2">
+                                            <label for="rails-floor-select" class="text-sm font-medium text-slate-200">Current Location:</label>
+                                            <select id="rails-floor-select" class="bg-slate-900 text-slate-200 border border-slate-700 rounded px-4 py-1 text-sm focus:outline-none focus:border-rose-500 cursor-pointer transition-colors">
+                                                <option value="1">Floor 1</option>
+                                                <option value="2">Floor 2</option>
+                                                <option value="3">Floor 3</option>
+                                                <option value="4">Floor 4</option>
+                                                <option value="5">Floor 5</option>
+                                                <option value="6">Floor 6</option>
+                                                <option value="7">Floor 7</option>
+                                                <option value="8">Floor 8</option>
+                                                <option value="9">Floor 9</option>
+                                                <option value="10">Floor 10</option>
+                                                <option value="11">Floor 11</option>
+                                                <option value="12">Floor 12</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="flex flex-col items-center gap-2 p-2 w-full max-w-[200px]">
+                                            <span id="rails-challenges-text" class="text-xs text-slate-400 font-medium">
+                                                0/36 Challenges
+                                            </span>
+
+                                            <div class="flex w-full bg-slate-900/80 rounded-lg border border-slate-700 shadow-inner overflow-hidden">
+                                                
+                                                <button id="btn-rails-minus" class="flex-1 py-2 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer select-none font-bold text-sm border-r border-slate-700" title="Remove 1 Challenge">-1</button>
+                                                
+                                                <button id="btn-rails-plus" class="flex-1 py-2 text-rose-400 hover:text-rose-300 hover:bg-slate-700 transition-colors cursor-pointer select-none font-bold text-sm border-r border-slate-700" title="Add 1 Challenge">+1</button>
+                                                
+                                                <button id="btn-rails-plus3" class="flex-1 py-2 text-rose-400 hover:text-rose-300 hover:bg-slate-700 transition-colors cursor-pointer select-none font-bold text-lg uppercase tracking-wider" title="Add 1 Full Floor (3 Challenges)">+3</button>
+                                                
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
