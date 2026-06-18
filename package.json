@@ -21,11 +21,10 @@
   },
   "homepage": "https://github.com/ricenric/nte-checklist#readme",
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^9.39.4",
-    "eslint-plugin-vitest": "^0.5.4",
+    "@tailwindcss/vite": "^4.3.1",
     "globals": "^17.6.0",
     "happy-dom": "^20.10.1",
+    "tailwindcss": "^4.3.1",
     "vitest": "^4.1.8"
   },
   "dependencies": {
