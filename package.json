@@ -9,6 +9,16 @@
     "test": "vitest run",
     "lint": "eslint ."
   },
+  "supportedArchitectures": {
+    "os": [
+      "current",
+      "linux"
+    ],
+    "cpu": [
+      "current",
+      "x64"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ricenric/nte-checklist.git"
@@ -31,9 +41,5 @@
     "@supabase/supabase-js": "^2.107.0",
     "@tailwindcss/cli": "^4.3.1",
     "tailwindcss": "^4.3.1"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "^1.0.0",
-    "lightningcss-linux-x64-gnu": "^1.32.0"
   }
 }
