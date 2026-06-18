@@ -10,7 +10,7 @@ vi.mock('../js/supabaseClient.js', () => ({
 }));
 
 import { defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails } from '../js/features/checklist.js';
-import { checkAndResetState } from '../js/logic/checklistLogic.js';
+import { checkAndResetState, calculateBoundedChallenges } from '../js/logic/checklistLogic.js';
 
 const createMockState = (overrides = {}) => ({
   // Defaults for all timestamps
@@ -90,4 +90,18 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
     expect(result.state.beyond.challenges).toBe(0);
   });
 
+});
+
+describe('Beyond the Rails Math Boundaries', () => {
+  it('should accurately cap maximum challenges to floor * 3', () => {
+    // Floor 5 should never allow more than 15 stars
+    const result = calculateBoundedChallenges(5, 14, 3);
+    expect(result).toBe(15);
+  });
+
+  it('should enforce floor minimum rules safely', () => {
+    // Floor 9 should never let challenges drop below 8 stars
+    const result = calculateBoundedChallenges(9, 8, -1);
+    expect(result).toBe(8);
+  });
 });

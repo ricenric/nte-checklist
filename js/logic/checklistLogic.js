@@ -106,3 +106,17 @@ export function getTimerStrings() {
         beyond: formatCountdown((beyondTarget + 1209600000) - currentMs)
     };
 }
+
+/**
+ * Calculates and clamps challenge bounds based on the current floor level
+ */
+export function calculateBoundedChallenges(currentFloor, currentChallenges, changeAmount) {
+    const minAllowed = Math.max(0, currentFloor - 1); 
+    const maxAllowed = currentFloor * 3;
+    
+    let newChallenges = currentChallenges + changeAmount;
+    
+    if (newChallenges < minAllowed) return minAllowed;
+    if (newChallenges > maxAllowed) return maxAllowed;
+    return newChallenges;
+}
