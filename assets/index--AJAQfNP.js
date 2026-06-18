@@ -64,7 +64,7 @@ ${v}`}class O extends Error{constructor({message:e,code:r,cause:s,name:n}){var i
 
                 <div class="character-portrait w-24 h-24 rounded-3xl border-2 border-slate-600 overflow-hidden bg-slate-900 shadow-lg">
                     <img
-                        src="/assets/character_portraits/${r.id}_small.webp"
+                        src="./assets/character_portraits/${r.id}_small.webp"
                         alt="${r.name}"
                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     >
