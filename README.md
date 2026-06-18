@@ -62,6 +62,10 @@ The peaceiris/actions-gh-pages action performs the following steps behind the sc
 
 **Serve**: GitHub Pages is *configured to look at the root of the gh-pages branch*. This is important that its pointed to serve from there. Since the action just placed your dist/ files there, GitHub Pages treats those as your website's root directory and serves them instantly.
 
+### Important
+
+If deploy fails, try deleting package-lock.json AND node_modules, running npm install, and then committing the new package-lock.json files.
+
 ## 🗄️ Database Table Setup
 
 To deploy the cloud features, create a table in your Supabase project to accept public anonymous records via `upsert`. 
