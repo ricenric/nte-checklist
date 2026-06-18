@@ -1,4 +1,4 @@
-import { checkAndResetState, getTimerStrings } from '../logic/checklistLogic.js';
+import { checkAndResetState, getTimerStrings, calculateBoundedChallenges } from '../logic/checklistLogic.js';
 import { supabase } from '../supabaseClient.js';
 
 export const defaultDailies = [
@@ -144,24 +144,13 @@ export function updateBeyondChallenges(changeAmount) {
         state.beyond = { ...defaultBeyondtheRails };
     }
 
-    const currentFloor = state.beyond.currentFloor || 1;
+    // Outsource the math computation completely to our logic file
+    state.beyond.challenges = calculateBoundedChallenges(
+        state.beyond.currentFloor || 1,
+        state.beyond.challenges || 0,
+        changeAmount
+    );
     
-    // 1. Calculate the bounds
-    // MIN: If on floor 9, you need at least (9-1)*3 = 24 stars.
-    // However, you said you want to allow 1 challenge per floor (8 stars for floor 9).
-    // Based on your specific requirement (Floor 9 -> min 8 stars):
-    const minAllowed = Math.max(0, currentFloor - 1); 
-    
-    // MAX: 3 challenges per floor. Floor 9 -> 27 max.
-    const maxAllowed = currentFloor * 3;
-    
-    let newChallenges = (state.beyond.challenges || 0) + changeAmount;
-    
-    // 2. Enforce the bounds
-    if (newChallenges < minAllowed) newChallenges = minAllowed;
-    if (newChallenges > maxAllowed) newChallenges = maxAllowed;
-
-    state.beyond.challenges = newChallenges;
     renderBeyond();
     pushStateToCloud();
 }
