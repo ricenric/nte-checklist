@@ -1,49 +1,27 @@
 {
   "name": "nte-checklist",
   "version": "1.0.0",
-  "description": "A high-performance, responsive web-based companion app designed to track daily, weekly, bi-weekly, and monthly server progression tasks for *Neverness to Everness*. Built with a modern vanilla stack and real-time cloud synchronization.",
-  "main": "index.js",
+  "type": "module",
+  "description": "A high-performance, responsive web-based companion app designed to track daily, weekly, bi-weekly, and monthly server progression tasks for Neverness to Everness.",
   "scripts": {
     "dev": "vite --host --port 8080",
     "build": "vite build",
     "test": "vitest run",
     "lint": "eslint ."
   },
-  "supportedArchitectures": {
-    "os": [
-      "current",
-      "linux"
-    ],
-    "cpu": [
-      "current",
-      "x64"
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ricenric/nte-checklist.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ricenric/nte-checklist/issues"
-  },
-  "homepage": "https://github.com/ricenric/nte-checklist#readme",
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.1",
-    "globals": "^17.6.0",
-    "happy-dom": "^20.10.1",
-    "tailwindcss": "^4.3.1",
-    "vitest": "^4.1.8",
-    "rolldown": "^1.0.3",
-    "lightningcss": "^1.32.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
     "vite": "^6.0.0",
-    "@tailwindcss/oxide": "^4.0.0"
+    "vitest": "^4.1.8",
+    "globals": "^17.6.0",
+    "happy-dom": "^20.10.1"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.107.0",
-    "@tailwindcss/cli": "^4.3.1",
-    "tailwindcss": "^4.3.1"
+    "@supabase/supabase-js": "^2.107.0"
   }
 }
