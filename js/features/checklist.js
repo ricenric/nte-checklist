@@ -2,15 +2,16 @@ import { checkAndResetState, getTimerStrings } from '../logic/checklistLogic.js'
 import { supabase } from '../supabaseClient.js';
 
 export const defaultDailies = [
+    { name: "Daily Activity", subtext: "100/100 points, free rewards" },
     { name: "Manage Cafe & Collect Fons", subtext: "Update Cafe with new trending items" },
     { name: "Make a Wish at Nacupeda's Pool" },
     { name: "Pray at the Fortune Shades Tree", subtext: "It's all random!"},
     { name: "Bond Event (Movies, Ferris Wheel)", subtext: "Once per day? Or per character?" },
-    { name: "Witch's House Daily Fortune Readings" },
     { name: "Give Gifts to Characters (Max 10)" },
     { name: "Get Daily Free Apartment Materials", subtext: "Module, Beetle Coins, Fluffy Cotton" },
     { name: "Farm Materials", subtext: "Anomaly Furniture, Monster Upgrade Materials" },
-    { name: "Beat Up Civilians for Items", subtext: "Lost Wallet, Briefcases, Lunch Bags" }
+    { name: "Beat Up Civilians for Items", subtext: "Lost Wallet, Briefcases, Lunch Bags" },
+    { name: "Witch's House Daily Fortune Readings" },
 ];
 export const defaultWeeklies = [
     { name: "Defeat 3 Weekly Bosses", subtext: "Anomaly Pilgrimage" },
@@ -142,10 +143,23 @@ export function updateBeyondChallenges(changeAmount) {
     if (!state.beyond || typeof state.beyond !== 'object') {
         state.beyond = { ...defaultBeyondtheRails };
     }
+
+    const currentFloor = state.beyond.currentFloor || 1;
+    
+    // 1. Calculate the bounds
+    // MIN: If on floor 9, you need at least (9-1)*3 = 24 stars.
+    // However, you said you want to allow 1 challenge per floor (8 stars for floor 9).
+    // Based on your specific requirement (Floor 9 -> min 8 stars):
+    const minAllowed = Math.max(0, currentFloor - 1); 
+    
+    // MAX: 3 challenges per floor. Floor 9 -> 27 max.
+    const maxAllowed = currentFloor * 3;
     
     let newChallenges = (state.beyond.challenges || 0) + changeAmount;
-    if (newChallenges < 0) newChallenges = 0;
-    if (newChallenges > 36) newChallenges = 36;
+    
+    // 2. Enforce the bounds
+    if (newChallenges < minAllowed) newChallenges = minAllowed;
+    if (newChallenges > maxAllowed) newChallenges = maxAllowed;
 
     state.beyond.challenges = newChallenges;
     renderBeyond();
@@ -157,7 +171,29 @@ export function updateBeyondFloor(floorValue) {
         state.beyond = { ...defaultBeyondtheRails };
     }
 
-    state.beyond.currentFloor = parseInt(floorValue, 10) || 1;
+    const newFloor = parseInt(floorValue, 10) || 1;
+    
+    // Force set the state
+    state.beyond.currentFloor = newFloor;
+    
+    // Always calculate and set to the floor maximum
+    const maxAllowedForFloor = newFloor * 3;
+    state.beyond.challenges = maxAllowedForFloor;
+
+    renderBeyond();
+    pushStateToCloud();
+}
+
+export function maxOutBeyondChallenges() {
+    if (!state.beyond || typeof state.beyond !== 'object') {
+        state.beyond = { ...defaultBeyondtheRails };
+    }
+
+    const currentFloor = state.beyond.currentFloor || 1;
+    
+    // Set to exactly Floor * 3 (Max allowed)
+    state.beyond.challenges = currentFloor * 3;
+
     renderBeyond();
     pushStateToCloud();
 }
