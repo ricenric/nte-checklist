@@ -40,6 +40,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
     "@tailwindcss/cli": "^4.3.1",
-    "tailwindcss": "^4.3.1"
+    "tailwindcss": "^4.3.1",
+    "lightningcss": "^1.32.0",
+    "rolldown": "^1.0.3"
   }
 }
