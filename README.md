@@ -2,8 +2,6 @@
 
 A high-performance, responsive web-based companion app designed to track daily, weekly, bi-weekly, and monthly server progression tasks for *Neverness to Everness*. Built with a modern vanilla stack and real-time cloud synchronization.
 
----
-
 ## 📌 Table of Contents
 
 * [🛠️ Tech Stack & Architecture](#️-tech-stack--architecture)
@@ -13,7 +11,6 @@ A high-performance, responsive web-based companion app designed to track daily, 
 * [🛡️ Security Architecture Notice](#-security-architecture-notice)
 * [🧪 Development & Quality Assurance](#development--quality-assurance)
 
----
 
 ## 🛠️ Tech Stack & Architecture
 
@@ -22,7 +19,6 @@ A high-performance, responsive web-based companion app designed to track daily, 
 * **Storage Layer:** Hybrid Cloud `upsert` + Isolated Device Cache (`localStorage`)
 * **State Machine:** Event-driven architecture with Supabase Realtime synchronization and automated timezone-locked reset loops
 
----
 
 ## 🚀 Core Features
 
@@ -41,7 +37,30 @@ Features an optimized hashchange listener that triggers a deterministic teardown
 ### 4. Game Clock Synchronization
 Calculates precision countdown boundaries tied directly to the **5:00 AM Eastern Time (ET)** server reset window, handling shifts dynamically across Daily, Weekly (Monday), Bi-Weekly, and Monthly resets.
 
----
+
+## Deployment
+
+This project uses **GitHub Actions** for automated deployment. Every time you push changes to the `main` branch, GitHub automatically builds your project and deploys it to GitHub Pages.
+
+- **Source Code:** Lives in the `main` branch.
+- **Live Site:** Served from the `gh-pages` branch.
+- **Workflow:** Defined in `.github/workflows/deploy.yml`.
+
+### How It Works
+
+The peaceiris/actions-gh-pages action performs the following steps behind the scenes every time you push code:
+
+**Checkout**: It clones your main branch onto a GitHub server.
+
+**Install & Build**: It runs npm ci and npm run build, which creates your optimized dist/ folder containing the "finished" website files (HTML/CSS/JS).
+
+**Branch Switch**: It switches to the gh-pages branch (it will create this branch automatically if it doesn't exist yet).
+
+**Sync**: It takes the contents of your dist/ folder and moves them into the root of the gh-pages branch.
+
+**Commit**: It creates a silent commit on that gh-pages branch containing only those build files.
+
+**Serve**: GitHub Pages is *configured to look at the root of the gh-pages branch*. This is important that its pointed to serve from there. Since the action just placed your dist/ files there, GitHub Pages treats those as your website's root directory and serves them instantly.
 
 ## 🗄️ Database Table Setup
 
@@ -78,7 +97,6 @@ grant all on table nte_sync to service_role;
 alter publication supabase_realtime add table nte_sync;
 ```
 
----
 
 ### 📡 Local Development Setup
 
