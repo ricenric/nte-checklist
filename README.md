@@ -37,6 +37,19 @@ Features an optimized hashchange listener that triggers a deterministic teardown
 ### 4. Game Clock Synchronization
 Calculates precision countdown boundaries tied directly to the **5:00 AM Eastern Time (ET)** server reset window, handling shifts dynamically across Daily, Weekly (Monday), Bi-Weekly, and Monthly resets.
 
+## 📂 Asset Management Note
+
+This project uses a hybrid approach for asset handling:
+
+* **Static Assets:** Standard images and icons used in UI components (like element badges) are managed via `src/assets/` and processed by Vite's build pipeline.
+* **Dynamically Generated Assets:** Images that are referenced via template literals in JavaScript (e.g., character portraits in `guideLogic.js` using `${character.id}`) are stored in the `/public` directory.
+
+### Why this approach?
+Because paths for dynamic assets are constructed at runtime, Vite's static build analyzer cannot detect them during the compilation phase. Storing them in the `/public` directory ensures:
+
+1.  **Direct Copy:** Files are copied exactly as-is into the root of the `dist/` directory during the build process.
+2.  **Runtime Resolution:** Using a relative path (e.g., `./assets/...`) in your code allows the browser to locate these assets correctly relative to the current file, which is essential for deployments to sub-directories like GitHub Pages (`/nte-checklist/`).
+3.  **Stability:** This prevents 404 errors in production by ensuring that dynamic references don't rely on Vite's asset-renaming or path-rewriting logic, which would otherwise fail to find the files.
 
 ## Deployment
 
