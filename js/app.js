@@ -1,5 +1,5 @@
 import { runBondCalc } from './features/calculator.js';
-import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets, toggleCategory, updateBeyondChallenges, updateBeyondFloor } from './features/checklist.js';
+import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets, toggleCategory, updateBeyondChallenges, updateBeyondFloor, maxOutBeyondChallenges } from './features/checklist.js';
 import { renderCharacterCards, filterCharacters, generateCharacterLinks, setElementFilter, autoFillElementBadges, applyRarityStyles } from './logic/guideLogic.js'
 import { supabase } from './supabaseClient.js';
 
@@ -137,9 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnMinus = document.getElementById('btn-rails-minus');
     const btnPlus = document.getElementById('btn-rails-plus');
     const btnPlus3 = document.getElementById('btn-rails-plus3');
+    const btnMax = document.getElementById('btn-rails-max');
 
     if (floorSelect) {
-        floorSelect.addEventListener('change', (e) => updateBeyondFloor(e.target.value));
+        floorSelect.addEventListener('input', (e) => updateBeyondFloor(e.target.value));
     }
     if (btnMinus) {
         btnMinus.addEventListener('click', () => updateBeyondChallenges(-1));
@@ -147,10 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnPlus) {
         btnPlus.addEventListener('click', () => updateBeyondChallenges(1));
     }
-    if (btnPlus3) {
-        btnPlus3.addEventListener('click', () => updateBeyondChallenges(3));
+    if (btnMax) {
+        btnMax.addEventListener('click', maxOutBeyondChallenges);
     }
-
 });
 
 // 1. Centralized Hash Change Handler (The ONLY one)

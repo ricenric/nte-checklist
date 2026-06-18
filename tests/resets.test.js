@@ -76,9 +76,10 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
 
     // Use the factory so dailies/weeklies/biweeklies/monthlies exist too
     const mockState = createMockState({
-        lastCheckedDaily: afterResetTime.getTime(), // keep daily reset from also firing here
+        lastCheckedDaily: afterResetTime.getTime(), 
         lastCheckedBeyond: oldTime.getTime(),
-        beyond: { currentFloor: 5, challenges: 12 } // Old progress
+        // UPDATE HERE: Floor 5 maxes at 15. Make it consistent with your new logic.
+        beyond: { currentFloor: 5, challenges: 15 } 
     });
 
     const result = checkAndResetState(mockState, config);

@@ -1,6 +1,6 @@
 Checklist
 ---
-1. ???  
+1. Make it so that pressing a beyond the rails floor updates challenges to the maximum challenges number? Floor 10 -> 30 challenges, and we can adjust from there.
 
 Bond  
 ---
@@ -9,4 +9,5 @@ Bond
 
 New Features?
 ---
-1. ???  
+1. Animate selecting different tabs like guides/bond xp calc/checklist
+2. Animate and gradient for checking off items for more satisfaction
