@@ -119,7 +119,7 @@
 
                         <div id="content-beyond" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
                             <div class="overflow-hidden">
-                                <div class="w-full pt-1">
+                                <!-- <div class="w-full pt-1">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 px-2 hover:bg-slate-800/40 rounded-lg transition-colors group gap-3">
                                         
                                         <div class="flex items-center gap-2">
@@ -152,6 +152,49 @@
                                                 <button id="btn-rails-plus" class="flex-1 py-2 text-rose-400 hover:text-rose-300 hover:bg-slate-700 transition-colors cursor-pointer select-none font-bold text-sm border-r border-slate-700" title="Add 1 Challenge">+1</button>
                                                                   
                                                 <button id="btn-rails-max" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1 px-3 rounded transition-all"> MAX </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div> -->
+                                <div class="w-full pt-2 pb-1 px-1">
+                                    <div class="bg-slate-900/50 border border-slate-700/50 rounded-lg p-4 flex flex-col gap-4 shadow-inner">
+                                        
+                                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
+                                            <div class="flex flex-col gap-1.5 w-full sm:w-auto">
+                                                <label for="rails-floor-select" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Current Location</label>
+                                                <select id="rails-floor-select" class="bg-slate-800 border border-slate-600 rounded-md px-3 py-1.5 text-slate-200 text-sm focus:ring-rose-500 focus:border-rose-500 outline-none cursor-pointer hover:border-slate-500 transition-colors w-full sm:w-40">
+                                                    <option value="1">Floor 1</option>
+                                                    <option value="2">Floor 2</option>
+                                                    <option value="3">Floor 3</option>
+                                                    <option value="4">Floor 4</option>
+                                                    <option value="5">Floor 5</option>
+                                                    <option value="6">Floor 6</option>
+                                                    <option value="7">Floor 7</option>
+                                                    <option value="8">Floor 8</option>
+                                                    <option value="9">Floor 9</option>
+                                                    <option value="10">Floor 10</option>
+                                                    <option value="11">Floor 11</option>
+                                                    <option value="12">Floor 12</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="text-left sm:text-right flex flex-col justify-end">
+                                                <span id="rails-challenges-text" class="text-sm font-bold text-rose-400 whitespace-nowrap">
+                                                    0/36 Stars Earned
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-1 pt-3 border-t border-slate-700/50 gap-3">
+                                            <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                                                Adjust Star Progress
+                                            </div>
+                                            
+                                            <div class="flex gap-2 w-full sm:w-auto justify-end">
+                                                <button id="btn-rails-minus" class="flex-1 sm:flex-none bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-300 px-3 py-1.5 rounded transition-colors sm:w-10 flex justify-center items-center font-bold" title="Remove 1">-1</button>
+                                                <button id="btn-rails-plus" class="flex-1 sm:flex-none bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-300 px-3 py-1.5 rounded transition-colors sm:w-10 flex justify-center items-center font-bold" title="Add 1">+1</button>
+                                                <button id="btn-rails-max" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-1.5 rounded transition-colors font-bold shadow-md ml-1 sm:ml-1">MAX FLOOR</button>
                                             </div>
                                         </div>
 
