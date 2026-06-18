@@ -16,14 +16,28 @@ export function runBondCalc() {
         inputs.bonusXp, inputs.giftsPerDay, inputs.xpPerGift, inputs.hasDailyDate
     );
     
-    const resultDiv = document.getElementById('calc-result');
-    resultDiv.classList.remove('hidden');
-    
+    // 1. Build the text exactly like your working template strings
     let resultText = `To go from level <strong>${inputs.currentLevel}</strong> to level <strong>${inputs.targetLevel}</strong>, you need <strong>${res.totalXpNeeded.toLocaleString()}</strong> more XP. <br>At <strong>${res.dailyXp.toLocaleString()}</strong> XP/day, it will take approximately <strong>${res.daysNeededBase} days</strong>.`;
     
     if (inputs.bonusXp > 0) {
         resultText += `<br><br>If you use <strong>${inputs.bonusXp.toLocaleString()} XP</strong> worth of unlimited affinity items, your remaining XP is <strong>${res.remainingXpAfterBonus.toLocaleString()}</strong> and days remaining would be <strong>${res.daysNeededWithBonus} days</strong>.`;
     }
     
-    document.getElementById('calc-output').innerHTML = resultText;
+    // 2. Set the content safely
+    const outputEl = document.getElementById('calc-output');
+    if (outputEl) {
+        outputEl.innerHTML = resultText;
+    }
+
+    const resultDiv = document.getElementById('calc-result');
+    if (resultDiv) {
+        // 1. Ensure it's visible so the browser measures it
+        resultDiv.classList.remove('hidden');
+        resultDiv.classList.remove('animate-result-reveal'); // Strip previous animation
+
+        // 2. Use a tiny delay to allow the browser to paint the 'hidden' removal
+        setTimeout(() => {
+            resultDiv.classList.add('animate-result-reveal');
+        }, 10); // 10ms is enough to force a re-paint
+    }
 }
