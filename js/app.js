@@ -9,23 +9,31 @@ import { supabase } from './supabaseClient.js';
  ==========================================
 */
 window.switchTab = function(activeTabId) {
-    // 1. Define all our views and buttons in one place
     const tabs = ['checklist', 'guides', 'calculator'];
     
     tabs.forEach(tab => {
         const viewEl = document.getElementById(`${tab}-view`);
         const btnEl = document.getElementById(`btn-${tab}`);
         
-        if (!viewEl || !btnEl) return; // Safety check
+        if (!viewEl || !btnEl) return;
 
         if (tab === activeTabId) {
             // Activate this tab
             viewEl.classList.remove('hidden');
+            
+            // Force a browser reflow so the animation restarts every time
+            void viewEl.offsetWidth; 
+            viewEl.classList.add('animate-tab-switch');
+            
+            // Update button styles
             btnEl.classList.add('bg-cyan-600', 'text-white');
             btnEl.classList.remove('bg-slate-700', 'text-slate-300');
         } else {
             // Deactivate other tabs
             viewEl.classList.add('hidden');
+            viewEl.classList.remove('animate-tab-switch'); // Clean up the class
+            
+            // Revert button styles
             btnEl.classList.add('bg-slate-700', 'text-slate-300');
             btnEl.classList.remove('bg-cyan-600', 'text-white');
         }

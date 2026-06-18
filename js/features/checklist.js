@@ -66,10 +66,26 @@ export async function pushStateToCloud() {
 
 export function renderLists() {
     const containers = {
-        'daily-list': { category: 'dailies', list: defaultDailies, color: 'checked:bg-cyan-500' },
-        'weekly-list': { category: 'weeklies', list: defaultWeeklies, color: 'checked:bg-purple-500' },
-        'biweekly-list': { category: 'biweeklies', list: defaultBiweeklies, color: 'checked:bg-emerald-500' },
-        'monthly-list': { category: 'monthlies', list: defaultMonthlies, color: 'checked:bg-amber-500' }
+        'daily-list': { 
+            category: 'dailies', 
+            list: defaultDailies, 
+            color: 'checked:bg-gradient-to-br checked:from-cyan-400 checked:to-blue-600 checked:border-transparent' 
+        },
+        'weekly-list': { 
+            category: 'weeklies', 
+            list: defaultWeeklies, 
+            color: 'checked:bg-gradient-to-br checked:from-purple-400 checked:to-pink-600 checked:border-transparent' 
+        },
+        'biweekly-list': { 
+            category: 'biweeklies', 
+            list: defaultBiweeklies, 
+            color: 'checked:bg-gradient-to-br checked:from-emerald-400 checked:to-teal-600 checked:border-transparent' 
+        },
+        'monthly-list': { 
+            category: 'monthlies', 
+            list: defaultMonthlies, 
+            color: 'checked:bg-gradient-to-br checked:from-amber-400 checked:to-orange-600 checked:border-transparent' 
+        }
     };
 
     Object.keys(containers).forEach(id => {
@@ -96,14 +112,28 @@ export function renderLists() {
     applyUIStates()
 }
 
-export function toggleTask(category, taskName, checked) {    
+// Inside checklist.js
+
+export function toggleTask(category, taskName, checked, skipRender = false) {    
     // Ensure the category exists in state
     if (!state[category]) {
         state[category] = {};
     }
 
     state[category][taskName] = checked; 
-    renderLists(); 
+    
+    if (!skipRender) {
+        // If coming from cloud or initial load, do a full re-render
+        renderLists(); 
+    } else {
+        // If clicked locally, just update the math/progress bars!
+        updateProgressBar('dailies', defaultDailies, 'daily');
+        updateProgressBar('weeklies', defaultWeeklies, 'weekly');
+        updateProgressBar('biweeklies', defaultBiweeklies, 'biweekly');
+        updateProgressBar('monthlies', defaultMonthlies, 'monthly');
+        renderBeyond();
+    }
+    
     pushStateToCloud(); 
 }
 
@@ -121,21 +151,58 @@ export function confirmReset() {
     }
 }
 
+// Inside checklist.js
+
 export function createTaskRow(category, task, isChecked, id, colorClass) {
     const div = document.createElement('div');
-    div.className = "task-row flex items-center py-3 justify-between hover:bg-slate-800/40 px-2 rounded-lg transition-colors group";
     
+    let wrapperClasses = "task-row flex items-center py-3 justify-between hover:bg-slate-800/40 px-2 rounded-lg transition-all duration-300 group";
+    if (isChecked) {
+        wrapperClasses += " is-checked-highlight";
+    }
+    div.className = wrapperClasses;
+    
+    const titleClasses = isChecked 
+        ? "text-slate-400 line-through" 
+        : "text-slate-200 group-hover:text-white";
+        
+    const subtextClasses = isChecked ? "opacity-50" : "";
+
     div.innerHTML = `
         <label class="flex items-start space-x-3 w-full cursor-pointer select-none">
-            <input type="checkbox" id="${id}" ${isChecked ? 'checked' : ''} class="checkbox-custom mt-0.5 h-5 w-5 rounded border-slate-700 bg-slate-900/50 text-slate-900 focus:ring-0 focus:ring-offset-0 transition-all appearance-none border checked:after:content-['✓'] checked:after:flex checked:after:justify-center checked:after:text-xs checked:after:font-bold checked:after:text-slate-900 ${colorClass}">
+            <input type="checkbox" id="${id}" ${isChecked ? 'checked' : ''} class="checkbox-custom mt-0.5 h-5 w-5 rounded border-slate-700 bg-slate-900/50 text-slate-900 focus:ring-0 focus:ring-offset-0 transition-all appearance-none border checked:after:content-['✓'] checked:after:flex checked:after:justify-center checked:after:text-xs checked:after:font-bold checked:after:text-white ${colorClass}">
             <span class="flex flex-col transition-all duration-200">
-                <span class="text-slate-200 text-sm font-medium group-hover:text-white transition-colors">${task.name}</span>
-                ${task.subtext ? `<span class="text-xs text-slate-400 mt-0.5">${task.subtext}</span>` : ''}
+                <span class="title-text text-sm font-medium transition-colors ${titleClasses}">${task.name}</span>
+                ${task.subtext ? `<span class="sub-text text-xs text-slate-500 mt-0.5 transition-opacity ${subtextClasses}">${task.subtext}</span>` : ''}
             </span>
         </label>
     `;
     
-    div.querySelector('input').addEventListener('change', (e) => toggleTask(category, task.name, e.target.checked));
+    // The magic happens here in the event listener
+    div.querySelector('input').addEventListener('change', (e) => {
+        const isNowChecked = e.target.checked;
+        
+        // 1. Trigger the sliding gradient animation
+        div.classList.toggle('is-checked-highlight', isNowChecked);
+        
+        // 2. Grab the text elements to toggle their styles
+        const titleSpan = div.querySelector('.title-text');
+        const subtextSpan = div.querySelector('.sub-text');
+        
+        if (isNowChecked) {
+            titleSpan.classList.add('text-slate-400', 'line-through');
+            titleSpan.classList.remove('text-slate-200', 'group-hover:text-white');
+            if (subtextSpan) subtextSpan.classList.add('opacity-50');
+        } else {
+            titleSpan.classList.remove('text-slate-400', 'line-through');
+            titleSpan.classList.add('text-slate-200', 'group-hover:text-white');
+            if (subtextSpan) subtextSpan.classList.remove('opacity-50');
+        }
+
+        // 3. Update the state and cloud, but tell it NOT to destroy the HTML
+        toggleTask(category, task.name, isNowChecked, true);
+    });
+    
     return div;
 }
 

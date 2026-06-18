@@ -1,3 +1,18 @@
+@keyframes slideFadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(15px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.animate-tab-switch {
+    animation: slideFadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* ─── 1. Scrollbar Setup ─── */
 html, body {
     scrollbar-width: thin;
@@ -15,18 +30,73 @@ html, body {
     position: relative;
     border-radius: 8px;
     transition: background 0.2s ease;
+    overflow: hidden; /* Keeps the sliding gradient inside the rounded corners */
 }
 
-/* Ensure this is at the bottom of your style.css */
-.task-row.is-checked-highlight {
-    background: linear-gradient(to right, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.05)) !important;
+/* ─── 3. The Animated Gradient Layer ─── */
+/* Create an invisible gradient layer that starts shrunk down to 0 width */
+.task-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.05));
+    transform-origin: left center; /* Anchors the animation to the left side */
+    transform: scaleX(0); /* Starts at 0 width */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* The smooth slide animation */
+    z-index: 0; /* Puts the gradient behind everything */
+    pointer-events: none; /* Prevents this layer from blocking your clicks */
 }
 
-/* Also ensure the text styles are clearly overriding */
+/* When checked, expand the gradient layer to full width */
+.task-row.is-checked-highlight::before {
+    transform: scaleX(1);
+}
+
+/* Ensure the text and checkbox stay safely above the sliding background layer */
+.task-row label {
+    position: relative;
+    z-index: 1;
+}
+
+/* ─── 4. Text Overrides ─── */
 .is-checked-highlight .text-slate-200 {
     color: white !important;
 }
 
-/* Formatting for completed text */
 .line-through { text-decoration: line-through; }
 .opacity-50 { opacity: 0.5; }
+
+/* ─── High-Performance Grid Refresh Animation ─── */
+.animate-grid-refresh {
+    animation: gridTabFade 0.3s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+}
+
+@keyframes gridTabFade {
+    from {
+        opacity: 0.4;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ─── Bond Calculator Result Reveal ─── */
+.animate-result-reveal {
+    animation: resultReveal 1.5s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+}
+
+@keyframes resultReveal {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

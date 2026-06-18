@@ -66,7 +66,15 @@ export function setElementFilter(element) {
 }
 
 export function filterCharacters(searchTerm) {
+    const grid = document.getElementById('character-grid');
     const searchEl = document.getElementById('character-search');
+
+    if (!grid) return;
+
+    // 1. Reset and re-trigger a high-performance container fade animation
+    grid.classList.remove('animate-grid-refresh');
+    void grid.offsetWidth; // Forces layout reflow so the browser catches the reset
+    grid.classList.add('animate-grid-refresh');
 
     const searchInput = (
         typeof searchTerm === 'string'
@@ -74,6 +82,7 @@ export function filterCharacters(searchTerm) {
             : searchEl?.value ?? ''
     ).toLowerCase();
 
+    // 2. Perform the instant filtering switch natively
     characterCards.forEach(card => {
         const nameSpan = card.querySelector('span');
         const charElement = card.getAttribute('data-element')?.toLowerCase() || '';
@@ -81,17 +90,12 @@ export function filterCharacters(searchTerm) {
         if (!nameSpan) return;
 
         const characterName = nameSpan.textContent.toLowerCase();
-
         const matchesText = characterName.includes(searchInput);
-
         const matchesElement =
             activeElementFilter === 'all' ||
             charElement === activeElementFilter;
 
-        card.classList.toggle(
-            'hidden',
-            !(matchesText && matchesElement)
-        );
+        card.classList.toggle('hidden', !(matchesText && matchesElement));
     });
 }
 
