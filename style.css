@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 @keyframes slideFadeIn {
     from { 
         opacity: 0; 
