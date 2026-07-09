@@ -16,8 +16,8 @@
       }
     }
     </script>
-  <script type="module" crossorigin src="/nte-checklist/assets/index--AJAQfNP.js"></script>
-  <link rel="stylesheet" crossorigin href="/nte-checklist/assets/index-Ch8z3Nm4.css">
+  <script type="module" crossorigin src="/nte-checklist/assets/index-C_ZuF92n.js"></script>
+  <link rel="stylesheet" crossorigin href="/nte-checklist/assets/index-CQOeeJdW.css">
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
 
@@ -89,6 +89,135 @@
                         <div id="content-daily" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
                             <div class="overflow-hidden">
                                 <div id="daily-list" class="w-full divide-y divide-slate-800 pt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                        <div onclick="toggleCategory('monthly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
+                            <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-amber-400 transition-colors">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Monthly Shop
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                <div class="text-right flex flex-col items-end">
+                                    <span class="text-xs font-mono px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">Resets 1st @ 5 AM ET</span>
+                                    <span id="monthly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                                </div>
+                                <svg id="arrow-monthly" class="w-5 h-5 text-slate-400 group-hover:text-amber-400 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2 pb-3 border-b border-slate-700/50">
+                            <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                                <span>Progress</span>
+                                <span id="monthly-progress-text">0% (0/0)</span>
+                            </div>
+                            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                                <div id="monthly-progress-bar" class="h-full bg-amber-500 transition-all duration-300 w-0"></div>
+                            </div>
+                        </div>
+
+                        <div id="content-monthly" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+                            <div class="overflow-hidden">
+                                <div id="monthly-list" class="w-full divide-y divide-slate-800 pt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                        <div onclick="toggleCategory('patch')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
+                            <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-indigo-400 transition-colors">
+                                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Patch Priorities
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                <div class="text-right flex flex-col items-end">
+                                    <span class="text-xs font-mono px-2 py-0.5 rounded border bg-indigo-500/10 text-indigo-400 border-indigo-500/20">Every Patch</span>
+                                    <span id="patch-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                                </div>
+                                <svg id="arrow-patch" class="w-5 h-5 text-slate-400 group-hover:text-indigo-400 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2 pb-3 border-b border-slate-700/50">
+                            <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                                <span>Progress</span>
+                                <span id="patch-progress-text">0% (0/0)</span>
+                            </div>
+                            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                                <div id="patch-progress-bar" class="h-full bg-indigo-500 transition-all duration-300 w-0"></div>
+                            </div>
+                        </div>
+
+                        <div id="content-patch" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+                            <div class="overflow-hidden">
+                                <div id="patch-list" class="w-full divide-y divide-slate-800 pt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right side div -->
+                <div class="space-y-6">
+                    
+                    <div class="w-full bg-slate-800/40 border border-purple-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                        <div onclick="toggleCategory('weekly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
+                            <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-purple-400 transition-colors">
+                                <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Weekly Priorities
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                <div class="text-right flex flex-col items-end">
+                                    <span class="text-xs font-mono px-2 py-0.5 rounded border bg-purple-500/10 text-purple-400 border-purple-500/20">Resets Mon 5 AM ET</span>
+                                    <span id="weekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                                </div>
+                                <svg id="arrow-weekly" class="w-5 h-5 text-slate-400 group-hover:text-purple-400 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2 pb-3 border-b border-slate-700/50">
+                            <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                                <span>Progress</span>
+                                <span id="weekly-progress-text">0% (0/0)</span>
+                            </div>
+                            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                                <div id="weekly-progress-bar" class="h-full bg-purple-500 transition-all duration-300 w-0"></div>
+                            </div>
+                        </div>
+
+                        <div id="content-weekly" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+                            <div class="overflow-hidden">
+                                <div id="weekly-list" class="w-full divide-y divide-slate-800 pt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-slate-800/40 border border-emerald-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                        <div onclick="toggleCategory('biweekly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
+                            <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-emerald-400 transition-colors">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bi-Weekly Priorities
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                <div class="text-right flex flex-col items-end">
+                                    <span class="text-xs font-mono px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Every 2 Weeks</span>
+                                    <span id="biweekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
+                                </div>
+                                <svg id="arrow-biweekly" class="w-5 h-5 text-slate-400 group-hover:text-emerald-400 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2 pb-3 border-b border-slate-700/50">
+                            <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
+                                <span>Progress</span>
+                                <span id="biweekly-progress-text">0% (0/0)</span>
+                            </div>
+                            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                                <div id="biweekly-progress-bar" class="h-full bg-emerald-500 transition-all duration-300 w-0"></div>
+                            </div>
+                        </div>
+
+                        <div id="content-biweekly" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+                            <div class="overflow-hidden">
+                                <div id="biweekly-list" class="w-full divide-y divide-slate-800 pt-1"></div>
                             </div>
                         </div>
                     </div>
@@ -200,105 +329,6 @@
 
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- Right side div -->
-                <div class="space-y-6">
-                    
-                    <div class="w-full bg-slate-800/40 border border-purple-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
-                        <div onclick="toggleCategory('weekly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
-                            <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-purple-400 transition-colors">
-                                <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Weekly Priorities
-                            </h2>
-                            <div class="flex items-center gap-3">
-                                <div class="text-right flex flex-col items-end">
-                                    <span class="text-xs font-mono px-2 py-0.5 rounded border bg-purple-500/10 text-purple-400 border-purple-500/20">Resets Mon 5 AM ET</span>
-                                    <span id="weekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
-                                </div>
-                                <svg id="arrow-weekly" class="w-5 h-5 text-slate-400 group-hover:text-purple-400 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2 pb-3 border-b border-slate-700/50">
-                            <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
-                                <span>Progress</span>
-                                <span id="weekly-progress-text">0% (0/0)</span>
-                            </div>
-                            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                                <div id="weekly-progress-bar" class="h-full bg-purple-500 transition-all duration-300 w-0"></div>
-                            </div>
-                        </div>
-
-                        <div id="content-weekly" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
-                            <div class="overflow-hidden">
-                                <div id="weekly-list" class="w-full divide-y divide-slate-800 pt-1"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="w-full bg-slate-800/40 border border-emerald-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
-                        <div onclick="toggleCategory('biweekly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
-                            <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-emerald-400 transition-colors">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bi-Weekly Priorities
-                            </h2>
-                            <div class="flex items-center gap-3">
-                                <div class="text-right flex flex-col items-end">
-                                    <span class="text-xs font-mono px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Every 2 Weeks</span>
-                                    <span id="biweekly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
-                                </div>
-                                <svg id="arrow-biweekly" class="w-5 h-5 text-slate-400 group-hover:text-emerald-400 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2 pb-3 border-b border-slate-700/50">
-                            <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
-                                <span>Progress</span>
-                                <span id="biweekly-progress-text">0% (0/0)</span>
-                            </div>
-                            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                                <div id="biweekly-progress-bar" class="h-full bg-emerald-500 transition-all duration-300 w-0"></div>
-                            </div>
-                        </div>
-
-                        <div id="content-biweekly" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
-                            <div class="overflow-hidden">
-                                <div id="biweekly-list" class="w-full divide-y divide-slate-800 pt-1"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
-                        <div onclick="toggleCategory('monthly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
-                            <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-amber-400 transition-colors">
-                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Monthly Shop
-                            </h2>
-                            <div class="flex items-center gap-3">
-                                <div class="text-right flex flex-col items-end">
-                                    <span class="text-xs font-mono px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">Resets 1st @ 5 AM ET</span>
-                                    <span id="monthly-timer" class="text-[11px] font-mono text-slate-400 mt-1">--d --h left</span>
-                                </div>
-                                <svg id="arrow-monthly" class="w-5 h-5 text-slate-400 group-hover:text-amber-400 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2 pb-3 border-b border-slate-700/50">
-                            <div class="flex justify-between items-center text-xs text-slate-400 font-mono mb-1">
-                                <span>Progress</span>
-                                <span id="monthly-progress-text">0% (0/0)</span>
-                            </div>
-                            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                                <div id="monthly-progress-bar" class="h-full bg-amber-500 transition-all duration-300 w-0"></div>
-                            </div>
-                        </div>
-
-                        <div id="content-monthly" class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
-                            <div class="overflow-hidden">
-                                <div id="monthly-list" class="w-full divide-y divide-slate-800 pt-1"></div>
                             </div>
                         </div>
                     </div>
