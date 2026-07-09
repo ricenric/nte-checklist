@@ -9,12 +9,21 @@ vi.mock('../js/supabaseClient.js', () => ({
   }
 }));
 
-import { defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails } from '../js/features/checklist.js';
+import { 
+    defaultDailies, 
+    defaultWeeklies, 
+    defaultBiweeklies, 
+    defaultMonthlies, 
+    defaultPatch, 
+    defaultBeyondtheRails,
+    PATCH_RESET_ANCHOR
+} from '../js/data/checklistData.js';
 import { checkAndResetState, calculateBoundedChallenges } from '../js/logic/checklistLogic.js';
 
 const createMockState = (overrides = {}) => ({
   // Defaults for all timestamps
   lastCheckedDaily: Date.now(),
+  lastCheckedPatch: Date.now(),
 
   // Defaults for all data buckets (required to prevent TypeError)
   dailies: {},
@@ -22,6 +31,7 @@ const createMockState = (overrides = {}) => ({
   biweeklies: {},
   monthlies: {},
   beyond: { currentFloor: 1, challenges: 0 },
+  patch: {},
 
   // Merge any specific overrides
   ...overrides
@@ -31,7 +41,7 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
   beforeEach(() => { vi.useFakeTimers(); });
   afterEach(() => { vi.useRealTimers(); localStorage.clear(); });
 
-  const config = { defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails };
+  const config = { defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails, defaultPatch, PATCH_RESET_ANCHOR};
 
   it('should maintain state when checking 1 minute BEFORE the 5:00 AM ET server reset', () => {
     const preResetTime = new Date(Date.UTC(2026, 5, 2, 8, 59, 0));
@@ -88,6 +98,42 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
     expect(result.resetTriggered).toBe(true);
     expect(result.state.beyond.currentFloor).toBe(1);
     expect(result.state.beyond.challenges).toBe(0);
+  });
+
+  describe('📦 Game-wide Patch Milestone Expirations', () => {
+    it('should maintain patch progression before reaching the patch reset anchor target', () => {
+      // August 19, 2026 at 5:00 AM ET is Date.UTC(2026, 7, 19, 9, 0, 0);
+      const prePatchTime = new Date(Date.UTC(2026, 7, 19, 8, 59, 0)); // 1 minute before patch deadline
+      vi.setSystemTime(prePatchTime);
+
+      const mockState = createMockState({
+        lastCheckedPatch: prePatchTime.getTime(),
+        patch: { "Hunter Exchange": true }
+      });
+
+      const result = checkAndResetState(mockState, config);
+
+      expect(result.resetTriggered).toBe(false);
+      expect(result.state.patch["Hunter Exchange"]).toBe(true);
+    });
+
+    it('should flush completed patch milestones once time oversteps the patch anchor target', () => {
+      const initialPatchTime = new Date(Date.UTC(2026, 7, 19, 8, 59, 0));
+      vi.setSystemTime(initialPatchTime);
+
+      const mockState = createMockState({
+        lastCheckedPatch: initialPatchTime.getTime(),
+        patch: { "Hunter Exchange": true }
+      });
+
+      // Jump past the August 19 deadline boundary
+      vi.advanceTimersByTime(2 * 60 * 1000); 
+
+      const updatedResult = checkAndResetState(mockState, config);
+
+      expect(updatedResult.resetTriggered).toBe(true);
+      expect(updatedResult.state.patch["Hunter Exchange"]).toBe(false);
+    });
   });
 
 });

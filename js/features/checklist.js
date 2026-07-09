@@ -1,41 +1,19 @@
 import { checkAndResetState, getTimerStrings, calculateBoundedChallenges } from '../logic/checklistLogic.js';
 import { supabase } from '../supabaseClient.js';
-
-export const defaultDailies = [
-    { name: "Daily Activity", subtext: "100/100 points, free rewards" },
-    { name: "Manage Cafe & Collect Fons", subtext: "Update Cafe with new trending items" },
-    { name: "Make a Wish at Nacupeda's Pool" },
-    { name: "Pray at the Fortune Shades Tree", subtext: "It's all random!"},
-    { name: "Bond Event (Movies, Ferris Wheel)", subtext: "Once per day? Or per character?" },
-    { name: "Give Gifts to Characters (Max 10)" },
-    { name: "Get Daily Free Apartment Materials", subtext: "Module, Beetle Coins, Fluffy Cotton" },
-    { name: "Farm Materials", subtext: "Anomaly Furniture, Monster Upgrade Materials" },
-    { name: "Beat Up Civilians for Items", subtext: "Lost Wallet, Briefcases, Lunch Bags" },
-    { name: "Witch's House Daily Fortune Readings" },
-];
-export const defaultWeeklies = [
-    { name: "Defeat 3 Weekly Bosses", subtext: "Anomaly Pilgrimage" },
-    { name: "Burn All City Stamina" },
-    { name: "Steal DSD Toys", subtext: "Bridge Crossings (West + East), Miguel District (West), New Herland District" },
-    { name: "Clear Special Delivery Commission (Old Mailbox)" },
-    { name: "Enter Realm of Greed & defeat Mammon Boss", subtext: "Participate in auction first to upgrade" },
-    { name: "Visit Ebisu's Auction House", subtext: "Prioritize Covetous Coins for Mammon Upgrade" },
-    { name: "Complete Weekly Battle Pass Missions", subtext: "Daily play usually means overcapping on Battle Pass" }
-];
-export const defaultBiweeklies = [
-    { name: "Pink Paws Heist", subtext: "Cap 1 million Fons" }
-];
-export const defaultMonthlies = [
-    { name: "Hunter Exchange", subtext: "Prioritize Annulith items - Lost Keys and Dice" },
-    { name: "Lost Exchange (Roll Pieces)", subtext: "350 + 350 + 1400 = 2100 Lost Pieces" }
-];
-
-export const defaultBeyondtheRails = { currentFloor: 1, challenges: 0 };
+import { 
+    defaultDailies, 
+    defaultWeeklies, 
+    defaultBiweeklies, 
+    defaultMonthlies, 
+    defaultPatch, 
+    defaultBeyondtheRails,
+    PATCH_RESET_ANCHOR 
+} from '../data/checklistData.js';
 
 export let state = {
-    dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
-    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0,
-    ui: { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false } // Added UI state (false = expanded)
+    dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {}, patch: {},
+    lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0, lastCheckedPatch: 0,
+    ui: { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false, patch: false } // Added UI state (false = expanded)
 };
 
 export function updateProgressBar(category, defaultList, prefix) {
@@ -85,6 +63,11 @@ export function renderLists() {
             category: 'monthlies', 
             list: defaultMonthlies, 
             color: 'checked:bg-gradient-to-br checked:from-amber-400 checked:to-orange-600 checked:border-transparent' 
+        },
+        'patch-list': { 
+            category: 'patch', 
+            list: defaultPatch, 
+            color: 'checked:bg-gradient-to-br checked:from-indigo-500 checked:to-violet-600 checked:border-transparent' 
         }
     };
 
@@ -106,6 +89,7 @@ export function renderLists() {
     updateProgressBar('weeklies', defaultWeeklies, 'weekly');
     updateProgressBar('biweeklies', defaultBiweeklies, 'biweekly');
     updateProgressBar('monthlies', defaultMonthlies, 'monthly');
+    updateProgressBar('patch', defaultPatch, 'patch');
     renderBeyond();
 
     // Restoration: Re-apply the opening/closing animations based on current UI state
@@ -131,6 +115,7 @@ export function toggleTask(category, taskName, checked, skipRender = false) {
         updateProgressBar('weeklies', defaultWeeklies, 'weekly');
         updateProgressBar('biweeklies', defaultBiweeklies, 'biweekly');
         updateProgressBar('monthlies', defaultMonthlies, 'monthly');
+        updateProgressBar('patch', defaultPatch, 'patch');
         renderBeyond();
     }
     
@@ -142,9 +127,9 @@ export function confirmReset() {
         const localStorageKey = 'nte_state_' + syncKey;
         localStorage.removeItem(localStorageKey);
         state = {
-            dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
-            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0,
-            ui: { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false } // Added UI state (false = expanded)
+            dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {}, patch: {},
+            lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0, lastCheckedPatch: 0,
+            ui: { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false, patch: false } // Added UI state (false = expanded)
         };
         pushStateToCloud();
         initApp();
@@ -342,7 +327,7 @@ export async function initApp(supabaseClient) {
     // 3. Initialize state from local cache
     state = savedState ? JSON.parse(savedState) : {
         dailies: {}, weeklies: {}, biweeklies: {}, monthlies: {}, beyond: {},
-        lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0
+        lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0, lastCheckedPatch: 0
     };
 
     // 4. Realtime Setup
@@ -358,7 +343,7 @@ export async function initApp(supabaseClient) {
             (payload) => {
                 if (payload.new?.state_json) {
                     const cloudCheck = checkAndResetState(payload.new.state_json, { 
-                        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
+                        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails, defaultPatch
                     });
 
                     state = cloudCheck.state;
@@ -398,7 +383,7 @@ export async function initApp(supabaseClient) {
 
                 if (data?.state_json) {
                     const cloudCheck = checkAndResetState(data.state_json, { 
-                        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
+                        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails, defaultPatch
                     });
 
                     state = cloudCheck.state;
@@ -417,11 +402,11 @@ export async function initApp(supabaseClient) {
 
     // 5. Finalize state structure and UI
     const result = checkAndResetState(state, { 
-        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
+        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails, defaultPatch 
     });
     state = result.state;
 
-    ['dailies', 'weeklies', 'biweeklies', 'monthlies', 'beyond'].forEach(cat => {
+    ['dailies', 'weeklies', 'biweeklies', 'monthlies', 'beyond', 'patch'].forEach(cat => {
         if (!state[cat] || typeof state[cat] !== 'object') state[cat] = {};
     });
 
@@ -458,11 +443,12 @@ export function updateTimers() {
     document.getElementById('biweekly-timer').innerText = timers.biweekly;
     document.getElementById('monthly-timer').innerText = timers.monthly;
     document.getElementById('beyond-timer').innerText = timers.beyond;
+    document.getElementById('patch-timer').innerText = timers.patch;
 }
 
 export function pollForResets() {
     const check = checkAndResetState(state, { 
-        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails 
+        defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails, defaultPatch
     });
     
     if (check.resetTriggered) {
@@ -475,7 +461,7 @@ export function pollForResets() {
 
 export function toggleCategory(category) {
     // Ensure older accounts get the UI property seamlessly
-    if (!state.ui) state.ui = { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false };
+    if (!state.ui) state.ui = { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false, patch: false };
     
     // Flip the boolean for the specific category
     state.ui[category] = !state.ui[category];
@@ -485,7 +471,7 @@ export function toggleCategory(category) {
 }
 
 export function applyUIStates() {
-    const categories = ['daily', 'weekly', 'biweekly', 'monthly', 'beyond'];
+    const categories = ['daily', 'weekly', 'biweekly', 'monthly', 'beyond', 'patch'];
     
     categories.forEach(cat => {
         const isCollapsed = state.ui?.[cat];

@@ -101,6 +101,12 @@ export const CHARACTERS = [
         element: 'lakshana',
         rarity: 'a'
     },
+     {
+        id: 'chaos',
+        name: 'Chaos',
+        element: 'lakshana',
+        rarity: 's'
+    }
     // {
     //     id: 'test',
     //     name: 'Test',

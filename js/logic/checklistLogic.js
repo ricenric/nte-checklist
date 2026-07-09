@@ -1,3 +1,5 @@
+import { PATCH_RESET_ANCHOR } from '../data/checklistData.js';
+
 export const BIWEEKLY_ANCHOR = new Date("2026-06-08T05:00:00-04:00").getTime();
 // Update anchor: June 17, 2026, 6:00 PM ET is 22:00:00 UTC
 export const BEYOND_ANCHOR = Date.UTC(2026, 5, 17, 22, 0, 0);
@@ -46,14 +48,15 @@ export function getTargetResets() {
         biweeklyTarget, 
         monthlyTarget: finalizedMonthly, 
         beyondTarget,
+        patchTarget: PATCH_RESET_ANCHOR,
         nowET: now // Renamed logically internally, but preserves structure compatibility
     };
 }
 
 // 💡 REFACTOR/EXPORT INDEPENDENT LOGIC FOR EASIER TESTING
 export function checkAndResetState(activeState, config) {
-    const { defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails } = config;
-    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, beyondTarget} = getTargetResets();
+    const { defaultDailies, defaultWeeklies, defaultBiweeklies, defaultMonthlies, defaultBeyondtheRails, defaultPatch } = config;
+    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, beyondTarget, patchTarget } = getTargetResets();
     let resetTriggered = false;
 
     if (!activeState.lastCheckedDaily || activeState.lastCheckedDaily < dailyTarget) { 
@@ -84,6 +87,17 @@ export function checkAndResetState(activeState, config) {
             resetTriggered = true; 
         }
     }
+    // Evaluate Global Patch Expiration against user profile tracking timestamp
+    if (!activeState.lastCheckedPatch || activeState.lastCheckedPatch < patchTarget) {
+        if (new Date().getTime() >= patchTarget) {
+            defaultPatch.forEach(t => {
+                if (!activeState.patch) activeState.patch = {};
+                activeState.patch[t.name] = false;
+            });
+            activeState.lastCheckedPatch = patchTarget;
+            resetTriggered = true;
+        }
+    }
     return { resetTriggered, state: activeState };
 }
 
@@ -94,7 +108,7 @@ function formatCountdown(ms) {
 }
 
 export function getTimerStrings() {
-    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, beyondTarget, nowET } = getTargetResets();
+    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, beyondTarget, patchTarget, nowET } = getTargetResets();
     const currentMs = nowET.getTime();
     
     // We calculate the strings here
@@ -103,7 +117,8 @@ export function getTimerStrings() {
         weekly: formatCountdown((weeklyTarget + 604800000) - currentMs),
         biweekly: formatCountdown((biweeklyTarget + 1209600000) - currentMs),
         monthly: formatCountdown(new Date(monthlyTarget).setMonth(new Date(monthlyTarget).getMonth() + 1) - currentMs),
-        beyond: formatCountdown((beyondTarget + 1209600000) - currentMs)
+        beyond: formatCountdown((beyondTarget + 1209600000) - currentMs),
+        patch: formatCountdown(patchTarget - currentMs)
     };
 }
 

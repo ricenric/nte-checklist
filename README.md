@@ -41,8 +41,27 @@ Calculates precision countdown boundaries tied directly to the **5:00 AM Eastern
 
 This project uses a hybrid approach for asset handling:
 
+Because `index.html` sits at the **project root**, Vite treats the root as its serve directory during dev. Any folder at the root (like `assets/`) is accessible via `/assets/...` URLs automatically.
+ 
+During build, Vite scans `index.html`, finds all `/assets/...` references, and copies them into `dist/` automatically — no extra config needed.
 * **Static Assets:** Standard images and icons used in UI components (like element badges) are managed via `src/assets/` and processed by Vite's build pipeline.
 * **Dynamically Generated Assets:** Images that are referenced via template literals in JavaScript (e.g., character portraits in `guideLogic.js` using `${character.id}`) are stored in the `/public` directory.
+
+### Where to put your files
+ 
+```
+assets/
+  character_cards/    ← referenced in index.html, safe where it is
+  card_backgrounds/   ← if loaded dynamically via JS, move to public/
+ 
+public/
+  assets/             ← anything Vite won't auto-detect goes here
+```
+ 
+Files in `public/` are always copied into `dist/` unconditionally, regardless of whether they're referenced anywhere.
+ 
+The URL path stays the same either way — `public/assets/bg.jpg` is still accessed as `/assets/bg.jpg`.
+ 
 
 ### Why this approach?
 Because paths for dynamic assets are constructed at runtime, Vite's static build analyzer cannot detect them during the compilation phase. Storing them in the `/public` directory ensures:
