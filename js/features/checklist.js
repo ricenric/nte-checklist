@@ -1,4 +1,4 @@
-import { checkAndResetState, getTimerStrings, calculateBoundedChallenges } from '../logic/checklistLogic.js';
+import { checkAndResetState, getCountdownDisplay, getTimerStrings, getTargetResets, calculateBoundedChallenges } from '../logic/checklistLogic.js';
 import { supabase } from '../supabaseClient.js';
 import { 
     defaultDailies, 
@@ -15,6 +15,260 @@ export let state = {
     lastCheckedDaily: 0, lastCheckedWeekly: 0, lastCheckedBiweekly: 0, lastCheckedMonthly: 0, lastCheckedBeyond: 0, lastCheckedPatch: 0,
     ui: { daily: false, weekly: false, biweekly: false, monthly: false, beyond: false, patch: false } // Added UI state (false = expanded)
 };
+
+// Session-only dismissals (cleared on page load)
+let sessionDismissals = new Set();
+let activeNotifications = new Map(); // Track which notifications are currently shown
+
+export function dismissNotificationSession(category) {
+    sessionDismissals.add(category);
+    const notif = activeNotifications.get(category);
+    if (notif) {
+        // Force reflow to ensure styles are computed before animation
+        notif.element.offsetHeight;
+        notif.element.classList.add('removing');
+        setTimeout(() => {
+            notif.element.remove();
+            activeNotifications.delete(category);
+        }, 300);
+    }
+}
+
+export function dismissNotificationPermanent(category, cycleTimestamp) {
+    const key = `dismissed_${category}_${cycleTimestamp}`;
+    localStorage.setItem(key, 'true');
+    const notif = activeNotifications.get(category);
+    if (notif) {
+        // Force reflow to ensure styles are computed before animation
+        notif.element.offsetHeight;
+        notif.element.classList.add('removing');
+        setTimeout(() => {
+            notif.element.remove();
+            activeNotifications.delete(category);
+        }, 300);
+    }
+}
+
+function isNotificationDismissed(category, cycleTimestamp) {
+    // Check session dismissal
+    if (sessionDismissals.has(category)) return true;
+    
+    // Check permanent dismissal for this cycle
+    const key = `dismissed_${category}_${cycleTimestamp}`;
+    return localStorage.getItem(key) === 'true';
+}
+
+export function updateNotifications() {
+    const stack = document.getElementById('notification-stack');
+    if (!stack) return;
+
+    const { dailyTarget, weeklyTarget, biweeklyTarget, monthlyTarget, beyondTarget, patchTarget } = getTargetResets();
+    const currentMs = new Date().getTime();
+
+    const warnings = [
+        { category: 'daily', display: 'Daily Tasks', time: (dailyTarget + 86400000) - currentMs, cycle: dailyTarget },
+        { category: 'weekly', display: 'Weekly Priorities', time: (weeklyTarget + 604800000) - currentMs, cycle: weeklyTarget },
+        { category: 'biweekly', display: 'Bi-Weekly Priorities', time: (biweeklyTarget + 1209600000) - currentMs, cycle: biweeklyTarget },
+        { category: 'monthly', display: 'Monthly Shop', time: new Date(monthlyTarget).setMonth(new Date(monthlyTarget).getMonth() + 1) - currentMs, cycle: monthlyTarget },
+        { category: 'beyond', display: 'Beyond The Rails', time: (beyondTarget + 1209600000) - currentMs, cycle: beyondTarget },
+        { category: 'patch', display: 'Patch Priorities', time: patchTarget - currentMs, cycle: patchTarget }
+    ];
+
+    const warningWindow = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+    // Track which categories should have notifications
+    const shouldHaveNotification = new Set();
+
+    warnings.forEach(({ category, display, time, cycle }) => {
+        if (time > 0 && time <= warningWindow && !isNotificationDismissed(category, cycle)) {
+            shouldHaveNotification.add(category);
+
+            // If this notification doesn't exist yet, create it
+            if (!activeNotifications.has(category)) {
+                const card = createNotificationCard(category, display, time, cycle);
+                activeNotifications.set(category, { element: card, timeMs: time });
+                stack.appendChild(card);
+            } else {
+                // Update the countdown on the existing notification
+                const notif = activeNotifications.get(category);
+                const textEl = notif.element.querySelector('.notification-text');
+                if (textEl) {
+                    textEl.textContent = `Refreshing in ${formatCountdownShort(time)}`;
+                }
+                notif.timeMs = time;
+            }
+        }
+    });
+
+    // Remove notifications that are no longer in the warning window
+    for (const [category, notif] of activeNotifications) {
+        if (!shouldHaveNotification.has(category)) {
+            notif.element.remove();
+            activeNotifications.delete(category);
+        }
+    }
+}
+
+function formatCountdownShort(ms) {
+    if (ms < 0) return 'Resetting...';
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    const d = Math.floor(h / 24);
+
+    if (d > 0) return `${d}d ${h % 24}h`;
+    if (h > 0) return `${h}h ${m % 60}m`;
+    return `${m % 60}m`;
+}
+
+function createNotificationCard(category, display, timeMs, cycleTimestamp) {
+    const card = document.createElement('div');
+    card.className = 'notification-card';
+
+    const content = document.createElement('div');
+    content.className = 'notification-content';
+    
+    const title = document.createElement('div');
+    title.className = 'notification-title';
+    title.textContent = display;
+    
+    const text = document.createElement('div');
+    text.className = 'notification-text';
+    text.textContent = `Refreshing in ${formatCountdownShort(timeMs)}`;
+
+    content.appendChild(title);
+    content.appendChild(text);
+
+    const actions = document.createElement('div');
+    actions.className = 'notification-actions';
+
+    const checkBtn = document.createElement('button');
+    checkBtn.className = 'notification-btn';
+    checkBtn.innerHTML = '✓';
+    checkBtn.title = 'Dismiss until refresh';
+    checkBtn.addEventListener('click', () => {
+        dismissNotificationSession(category);
+    });
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.className = 'notification-btn notification-btn-dismiss';
+    dismissBtn.innerHTML = '✕';
+    dismissBtn.title = 'Dismiss until next cycle';
+    dismissBtn.addEventListener('click', () => {
+        dismissNotificationPermanent(category, cycleTimestamp);
+    });
+
+    actions.appendChild(checkBtn);
+    actions.appendChild(dismissBtn);
+
+    card.appendChild(content);
+    card.appendChild(actions);
+
+    return card;
+}
+
+// ─── Settings Sidebar Management ───
+export function initSettingsSidebar() {
+    const menuToggle = document.getElementById('menu-toggle');
+    const menuClose = document.getElementById('menu-close');
+    const sidebar = document.getElementById('settings-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    menuToggle?.addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+        updateDismissedList();
+    });
+
+    menuClose?.addEventListener('click', closeSidebar);
+    overlay?.addEventListener('click', closeSidebar);
+
+    document.getElementById('clear-all-dismissals')?.addEventListener('click', () => {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('dismissed_'));
+        keys.forEach(key => localStorage.removeItem(key));
+        sessionDismissals.clear();
+        activeNotifications.clear();
+        updateDismissedList();
+        updateNotifications();
+        console.log('✅ All notification dismissals cleared');
+    });
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('settings-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+}
+
+function updateDismissedList() {
+    const list = document.getElementById('dismissed-list');
+    if (!list) return;
+
+    const categoryNames = {
+        daily: 'Daily Tasks',
+        weekly: 'Weekly Priorities',
+        biweekly: 'Bi-Weekly Priorities',
+        monthly: 'Monthly Shop',
+        beyond: 'Beyond The Rails',
+        patch: 'Patch Priorities'
+    };
+
+    const dismissed = new Map();
+    
+    // Collect all dismissed notifications
+    for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('dismissed_') && localStorage.getItem(key) === 'true') {
+            const parts = key.split('_');
+            if (parts.length >= 3) {
+                const category = parts[1];
+                const cycleTimestamp = parts.slice(2).join('_');
+                if (!dismissed.has(category)) {
+                    dismissed.set(category, []);
+                }
+                dismissed.get(category).push(cycleTimestamp);
+            }
+        }
+    }
+
+    // Build the dismissed list UI
+    list.innerHTML = '';
+    
+    if (dismissed.size === 0) {
+        list.innerHTML = '<p class="text-xs text-slate-500">No dismissals active</p>';
+        return;
+    }
+
+    dismissed.forEach((timestamps, category) => {
+        const displayName = categoryNames[category] || category;
+        const div = document.createElement('div');
+        div.className = 'bg-slate-700/50 p-3 rounded border border-slate-600';
+        
+        div.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-slate-200">${displayName}</span>
+                <button class="re-enable-btn text-xs px-2 py-1 rounded bg-cyan-600 hover:bg-cyan-700 text-white transition-colors cursor-pointer" data-category="${category}">
+                    Re-enable
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">${timestamps.length} ${timestamps.length === 1 ? 'cycle' : 'cycles'} dismissed</p>
+        `;
+        
+        list.appendChild(div);
+        
+        div.querySelector('.re-enable-btn')?.addEventListener('click', (e) => {
+            const cat = e.target.dataset.category;
+            const keysToRemove = Object.keys(localStorage).filter(k => 
+                k.startsWith(`dismissed_${cat}_`) && localStorage.getItem(k) === 'true'
+            );
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            sessionDismissals.delete(cat);
+            updateDismissedList();
+            updateNotifications();
+            console.log(`✅ Re-enabled notifications for ${displayName}`);
+        });
+    });
+}
 
 export function updateProgressBar(category, defaultList, prefix) {
     const total = defaultList.length;
@@ -436,14 +690,43 @@ export function updateClock() {
 
 export function updateTimers() {
     const timers = getTimerStrings();
-    
-    // Update the DOM elements
-    document.getElementById('daily-timer').innerText = timers.daily;
-    document.getElementById('weekly-timer').innerText = timers.weekly;
-    document.getElementById('biweekly-timer').innerText = timers.biweekly;
-    document.getElementById('monthly-timer').innerText = timers.monthly;
-    document.getElementById('beyond-timer').innerText = timers.beyond;
-    document.getElementById('patch-timer').innerText = timers.patch;
+    const timerTargets = [
+        ['daily-timer', timers.daily],
+        ['weekly-timer', timers.weekly],
+        ['biweekly-timer', timers.biweekly],
+        ['monthly-timer', timers.monthly],
+        ['beyond-timer', timers.beyond],
+        ['patch-timer', timers.patch]
+    ];
+
+    timerTargets.forEach(([id, text]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const countdown = getCountdownDisplay(text.includes('Resetting...') ? -1 : parseTimerText(text));
+        el.innerText = countdown.text;
+        el.className = countdown.isWarning
+            ? 'text-[11px] font-mono text-amber-300 mt-1 animate-pulse'
+            : 'text-[11px] font-mono text-slate-400 mt-1';
+    });
+
+    updateNotifications();
+}
+
+function parseTimerText(text) {
+    if (!text || text.includes('Resetting...')) return -1;
+
+    const dayMatch = text.match(/(\d+)\s*d/i);
+    const hourMatch = text.match(/(\d+)\s*h/i);
+    const minuteMatch = text.match(/(\d+)\s*m/i);
+    const secondMatch = text.match(/(\d+)\s*s/i);
+
+    const days = dayMatch ? parseInt(dayMatch[1], 10) : 0;
+    const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
+    const minutes = minuteMatch ? parseInt(minuteMatch[1], 10) : 0;
+    const seconds = secondMatch ? parseInt(secondMatch[1], 10) : 0;
+
+    return (((days * 24) + hours) * 60 + minutes) * 60 * 1000 + seconds * 1000;
 }
 
 export function pollForResets() {

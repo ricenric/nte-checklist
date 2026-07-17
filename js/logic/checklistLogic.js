@@ -101,10 +101,28 @@ export function checkAndResetState(activeState, config) {
     return { resetTriggered, state: activeState };
 }
 
-function formatCountdown(ms) {
-    if (ms < 0) return "Resetting...";
+export function getCountdownDisplay(ms) {
+    if (ms < 0) {
+        return {
+            text: 'Resetting...',
+            isWarning: true,
+            isResetting: true
+        };
+    }
+
     const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24);
-    return d > 0 ? `${d}d ${h % 24}h left` : `${h % 24}h ${m % 60}m ${s % 60}s left`;
+    const baseText = d > 0 ? `${d}d ${h % 24}h left` : `${h % 24}h ${m % 60}m ${s % 60}s left`;
+    const isWarning = ms <= 3 * 24 * 60 * 60 * 1000;
+
+    return {
+        text: isWarning ? `⚠ ${baseText}` : baseText,
+        isWarning,
+        isResetting: false
+    };
+}
+
+function formatCountdown(ms) {
+    return getCountdownDisplay(ms).text;
 }
 
 export function getTimerStrings() {
