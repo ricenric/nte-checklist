@@ -1,5 +1,5 @@
 import { runBondCalc } from './features/calculator.js';
-import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets, toggleCategory, updateBeyondChallenges, updateBeyondFloor, maxOutBeyondChallenges } from './features/checklist.js';
+import { initApp, confirmReset, updateClock, updateTimers, handleSyncKeyChange, pollForResets, toggleCategory, updateBeyondChallenges, updateBeyondFloor, maxOutBeyondChallenges, initSettingsSidebar } from './features/checklist.js';
 import { renderCharacterCards, filterCharacters, generateCharacterLinks, setElementFilter, autoFillElementBadges, applyRarityStyles } from './logic/guideLogic.js'
 import { supabase } from './supabaseClient.js';
 
@@ -49,6 +49,7 @@ window.switchTab = function(activeTabId) {
 document.addEventListener('DOMContentLoaded', () => {
     // Initiate App and connect to db
     initApp(supabase);
+    initSettingsSidebar();
     // Daily Checklist
     updateClock();
     updateTimers();

@@ -106,6 +106,12 @@ export const CHARACTERS = [
         name: 'Chaos',
         element: 'lakshana',
         rarity: 's'
+    },
+    {
+        id: 'shinku',
+        name: 'Shinku',
+        element: 'cosmos',
+        rarity: 's'
     }
     // {
     //     id: 'test',

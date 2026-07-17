@@ -22,9 +22,14 @@
     <div class="w-full max-w-6xl mx-auto p-6 space-y-6">
         
         <div class="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-slate-800 pb-4 gap-4">
-            <div>
-                <h1 class="text-3xl font-extrabold tracking-wider text-cyan-400 uppercase">Neverness to Everness</h1>
-                <p class="text-xs text-slate-400 tracking-widest uppercase">HELPER Checklist System</p>
+            <div class="flex items-center gap-4">
+                <button id="menu-toggle" class="text-2xl text-slate-400 hover:text-slate-200 transition-colors cursor-pointer">
+                    ☰
+                </button>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-wider text-cyan-400 uppercase">Neverness to Everness</h1>
+                    <p class="text-xs text-slate-400 tracking-widest uppercase">HELPER Checklist System</p>
+                </div>
             </div>
             
             <div class="flex flex-wrap items-center gap-3 self-start sm:self-center">
@@ -39,6 +44,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Notification Container -->
+        <div id="notification-stack" class="fixed top-6 right-6 z-50 space-y-3 max-w-sm"></div>
+
+        <!-- Settings Sidebar -->
+        <div id="settings-sidebar" class="fixed left-0 top-0 h-screen w-64 bg-slate-800 border-r border-slate-700 z-40 transform -translate-x-full transition-transform duration-300">
+            <div class="p-6 space-y-6 h-full flex flex-col">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-cyan-400">Settings</h2>
+                    <button id="menu-close" class="text-2xl text-slate-400 hover:text-slate-200 transition-colors cursor-pointer">×</button>
+                </div>
+                
+                <div class="flex-1 space-y-4">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-300 mb-3">Notification Dismissals</h3>
+                        <div id="dismissed-list" class="space-y-2">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="clear-all-dismissals" class="w-full px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors font-medium text-sm">
+                    Clear All Dismissals
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden"></div>
 
         <div class="flex gap-2 w-full max-w-2xl">
             <button id="btn-checklist" onclick="switchTab('checklist')" class="w-full text-left px-4 py-2 rounded-lg bg-cyan-600 text-white font-medium transition-colors flex items-center gap-2 cursor-pointer justify-center">
@@ -60,7 +94,7 @@
                 <!-- Left Side Div -->
                 <div class="space-y-6">
                     
-                    <div class="w-full bg-slate-800/40 border border-cyan-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                    <div class="w-full bg-slate-800/40 border border-cyan-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all category-card">
                         <div onclick="toggleCategory('daily')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
                             <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-cyan-400 transition-colors">
                                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> Daily Tasks
@@ -91,7 +125,7 @@
                         </div>
                     </div>
 
-                    <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                    <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all category-card">
                         <div onclick="toggleCategory('monthly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
                             <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-amber-400 transition-colors">
                                 <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Monthly Shop
@@ -122,7 +156,7 @@
                         </div>
                     </div>
 
-                    <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                    <div class="w-full bg-slate-800/40 border border-amber-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all category-card">
                         <div onclick="toggleCategory('patch')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
                             <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-indigo-400 transition-colors">
                                 <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Patch Priorities
@@ -158,7 +192,7 @@
                 <!-- Right side div -->
                 <div class="space-y-6">
                     
-                    <div class="w-full bg-slate-800/40 border border-purple-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                    <div class="w-full bg-slate-800/40 border border-purple-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all category-card">
                         <div onclick="toggleCategory('weekly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
                             <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-purple-400 transition-colors">
                                 <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span> Weekly Priorities
@@ -189,7 +223,7 @@
                         </div>
                     </div>
 
-                    <div class="w-full bg-slate-800/40 border border-emerald-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                    <div class="w-full bg-slate-800/40 border border-emerald-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all category-card">
                         <div onclick="toggleCategory('biweekly')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
                             <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-emerald-400 transition-colors">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bi-Weekly Priorities
@@ -220,7 +254,7 @@
                         </div>
                     </div>
 
-                    <div class="w-full bg-slate-800/40 border border-rose-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all">
+                    <div class="w-full bg-slate-800/40 border border-rose-500/20 backdrop-blur-md rounded-xl p-5 shadow-xl transition-all category-card">
                         <div onclick="toggleCategory('beyond')" class="w-full flex items-center justify-between gap-2 cursor-pointer select-none group pb-2">
                             <h2 class="text-xl font-bold tracking-wide flex items-center gap-2 group-hover:text-rose-400 transition-colors">
                                 <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span> Beyond The Rails
