@@ -112,6 +112,18 @@ export const CHARACTERS = [
         name: 'Shinku',
         element: 'cosmos',
         rarity: 's'
+    },
+    {
+        id: 'iroi',
+        name: 'Iroi',
+        element: 'anima',
+        rarity: 's'
+    },
+    {
+        id: 'zankou',
+        name: 'Zankou',
+        element: 'incantation',
+        rarity: 's'
     }
     // {
     //     id: 'test',
