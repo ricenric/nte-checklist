@@ -232,3 +232,62 @@ html, body {
     from { opacity: 0.5; }
     to { opacity: 0; }
 }
+.wheel-btn {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    /* Use scale(1) as a safe, valid fallback instead of 'none' */
+    transform: translate(-50%, -50%) var(--wheel-transform, scale(1));
+    transition: box-shadow 0.12s ease, background 0.12s ease;
+    box-shadow: 0 4px 10px rgba(2,6,23,0.38);
+    border: 1px solid rgba(255,255,255,0.02);
+    cursor: pointer;
+    width: 48px;
+    height: 48px;
+    border-radius: 9999px;
+    background: transparent;
+}
+
+.wheel-btn:hover {
+    box-shadow: 0 6px 14px rgba(2,6,23,0.42);
+}
+
+.wheel-btn.active {
+    box-shadow: 0 0 0 6px rgba(59,130,246,0.12);
+    outline: 3px solid rgba(99,102,241,0.12);
+}
+
+.element-wheel {
+    /* 86px is a great starting point; adjust this up or down by a few pixels if you need to perfectly match the underlying artwork's radius */
+    --wheel-radius: 100px; 
+}
+
+/* Corrected Hexagon Angles */
+.wheel-pos-center { width: 64px; height: 64px; --wheel-transform: scale(1); }
+.wheel-pos-top { --wheel-transform: rotate(0deg) translateY(calc(-1 * var(--wheel-radius))) rotate(0deg); }
+.wheel-pos-top-right { --wheel-transform: rotate(60deg) translateY(calc(-1 * var(--wheel-radius))) rotate(-60deg); }
+.wheel-pos-bottom-right { --wheel-transform: rotate(120deg) translateY(calc(-1 * var(--wheel-radius))) rotate(-120deg); }
+.wheel-pos-bottom { --wheel-transform: rotate(180deg) translateY(calc(-1 * var(--wheel-radius))) rotate(-180deg); }
+.wheel-pos-bottom-left { --wheel-transform: rotate(240deg) translateY(calc(-1 * var(--wheel-radius))) rotate(-240deg); }
+.wheel-pos-top-left { --wheel-transform: rotate(300deg) translateY(calc(-1 * var(--wheel-radius))) rotate(-300deg); }
+
+/* Base state for all filter buttons */
+.filter-btn {
+    background-color: transparent;
+    border: 2px solid transparent;
+    color: #94a3b8; /* slate-400 text for "All" */
+}
+
+/* Hover state for inactive buttons */
+.filter-btn:not(.active):hover {
+    background-color: #1e293b; /* slate-800 */
+    color: #f8fafc;
+}
+
+/* The chosen (active) button */
+.filter-btn.active {
+    background-color: rgba(6, 182, 212, 0.15); /* A subtle cyan background */
+    border-color: #06b6d4; /* Cyan border */
+    color: #ffffff; /* White text for "All" */
+}
