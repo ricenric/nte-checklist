@@ -16,8 +16,8 @@
       }
     }
     </script>
-  <script type="module" crossorigin src="/nte-checklist/assets/index-PWjbwYrg.js"></script>
-  <link rel="stylesheet" crossorigin href="/nte-checklist/assets/index-B-UH6yme.css">
+  <script type="module" crossorigin src="/nte-checklist/assets/index-rw2doc95.js"></script>
+  <link rel="stylesheet" crossorigin href="/nte-checklist/assets/index-CBLLUURD.css">
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
 
@@ -376,40 +376,36 @@
                 <h2 class="text-2xl font-bold text-cyan-400">Character Guides</h2>
                 <p class="text-sm text-slate-400 mt-1 mb-8">Select a character to view their optimal build and material routes.</p>
 
-                <div class="flex flex-col md:flex-row gap-4 mb-6">
-                    <div class="relative w-full md:w-64">
-                        <input type="text" id="character-search" placeholder="Search for character here..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-5 pr-4 py-2 text-slate-200 focus:outline-none focus:border-cyan-500 transition-colors">
-                        <button id="clear-search" type="button" class="hidden absolute right-3 top-5 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer" aria-label="Clear search"> ✕ </button>
-                    </div>
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <!-- Search Bar -->
+    <div class="relative w-full md:w-64">
+        <input type="text" id="character-search" placeholder="Search character..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-4 pr-8 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+        <button id="clear-search" type="button" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">✕</button>
+    </div>
 
-                    <div class="flex gap-2 overflow-x-auto pl-1 pr-1 pt-1 pb-2" id="element-filters">
-                        <button class="filter-btn active bg-cyan-600 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer text-sm flex items-center justify-center" data-target="all">All</button>
-        
-                        <button class="filter-btn bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center" data-target="cosmos" title="Cosmos">
-                            <img src="/nte-checklist/assets/elements/Cosmos.webp" alt="Cosmos" class="w-8 h-8 object-contain">
-                        </button>
-
-                        <button class="filter-btn bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center" data-target="anima" title="Anima">
-                            <img src="/nte-checklist/assets/elements/Anima.webp" alt="Anima" class="w-8 h-8 object-contain">
-                        </button>
-
-                        <button class="filter-btn bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center" data-target="incantation" title="Incantation">
-                            <img src="/nte-checklist/assets/elements/Incantation.webp" alt="Incantation" class="w-8 h-8 object-contain">
-                        </button>
-
-                        <button class="filter-btn bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center" data-target="chaos" title="Chaos">
-                            <img src="/nte-checklist/assets/elements/Chaos.webp" alt="Chaos" class="w-8 h-8 object-contain">
-                        </button>
-
-                        <button class="filter-btn bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center" data-target="psyche" title="Psyche">
-                            <img src="/nte-checklist/assets/elements/Psyche.webp" alt="Psyche" class="w-8 h-8 object-contain">
-                        </button>
-
-                        <button class="filter-btn bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center" data-target="lakshana" title="Lakshana">
-                            <img src="/nte-checklist/assets/elements/Lakshana.webp" alt="Lakshana" class="w-8 h-8 object-contain">
-                        </button>
-                    </div>
-                </div>
+    <!-- Horizontal Element Pills -->
+    <div class="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-lg border border-slate-800" id="element-filters">
+        <button class="filter-btn active px-3.5 py-3 rounded-md text-xs font-medium bg-cyan-600 text-white transition-colors" data-target="all">All</button>
+        <button class="filter-btn p-1.5 rounded-md hover:bg-slate-800 transition-colors" data-target="cosmos" title="Cosmos">
+            <img src="/nte-checklist/assets/elements/Cosmos.webp" class="w-8 h-8" alt="Cosmos">
+        </button>
+        <button class="filter-btn p-1.5 rounded-md hover:bg-slate-800 transition-colors" data-target="anima" title="Anima">
+            <img src="/nte-checklist/assets/elements/Anima.webp" class="w-8 h-8" alt="Anima">
+        </button>
+        <button class="filter-btn p-1.5 rounded-md hover:bg-slate-800 transition-colors" data-target="incantation" title="Incantation">
+            <img src="/nte-checklist/assets/elements/Incantation.webp" class="w-8 h-8" alt="Incantation">
+        </button>
+        <button class="filter-btn p-1.5 rounded-md hover:bg-slate-800 transition-colors" data-target="chaos" title="Chaos">
+            <img src="/nte-checklist/assets/elements/Chaos.webp" class="w-8 h-8" alt="Chaos">
+        </button>
+        <button class="filter-btn p-1.5 rounded-md hover:bg-slate-800 transition-colors" data-target="psyche" title="Psyche">
+            <img src="/nte-checklist/assets/elements/Psyche.webp" class="w-8 h-8" alt="Psyche">
+        </button>
+        <button class="filter-btn p-1.5 rounded-md hover:bg-slate-800 transition-colors" data-target="lakshana" title="Lakshana">
+            <img src="/nte-checklist/assets/elements/Lakshana.webp" class="w-8 h-8" alt="Lakshana">
+        </button>
+    </div>
+</div>
             </div>
 
             <div class="flex flex-wrap gap-6" id="character-grid"></div>
