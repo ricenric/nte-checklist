@@ -32,5 +32,5 @@ export const defaultPatch = [
 export const defaultBeyondtheRails = { currentFloor: 1, challenges: 0 };
 
 // 📅 ADJUST NEXT PATCH RESET DATE HERE (Year, Month [0-11], Day, Hour ET)
-// Example:  Sept 9, 05:59 (UTC+8)
-export const PATCH_RESET_ANCHOR = Date.UTC(2026, 8, 9, 21, 59, 0);
+// Example:  Sept 30, 05:59 (UTC+8)
+export const PATCH_RESET_ANCHOR = Date.UTC(2026, 8, 29, 21, 59, 0);
