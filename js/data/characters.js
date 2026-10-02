@@ -42,6 +42,12 @@ export const CHARACTERS = [
         rarity: 's'
     },
     {
+        id: 'linko',
+        name: 'Linko',
+        element: 'anima',
+        rarity: 's'
+    },
+    {
         id: 'baicang',
         name: 'Baicang',
         element: 'incantation',
@@ -86,6 +92,12 @@ export const CHARACTERS = [
     {
         id: 'fadia',
         name: 'Fadia',
+        element: 'psyche',
+        rarity: 's'
+    },
+    {
+        id: 'blackbird',
+        name: 'Blackbird',
         element: 'psyche',
         rarity: 's'
     },

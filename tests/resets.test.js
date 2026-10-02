@@ -102,8 +102,7 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
 
   describe('📦 Game-wide Patch Milestone Expirations', () => {
     it('should maintain patch progression before reaching the patch reset anchor target', () => {
-      // August 19, 2026 at 5:00 AM ET is Date.UTC(2026, 7, 19, 9, 0, 0);
-      const prePatchTime = new Date(Date.UTC(2026, 7, 19, 8, 59, 0)); // 1 minute before patch deadline
+      const prePatchTime = new Date(Date.UTC(2026, 10, 10, 21, 58, 0)); // 1 minute before November 11, 05:59 (UTC+8)
       vi.setSystemTime(prePatchTime);
 
       const mockState = createMockState({
@@ -118,7 +117,7 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
     });
 
     it('should flush completed patch milestones once time oversteps the patch anchor target', () => {
-      const initialPatchTime = new Date(Date.UTC(2026, 7, 19, 8, 59, 0));
+      const initialPatchTime = new Date(Date.UTC(2026, 10, 10, 21, 58, 0));
       vi.setSystemTime(initialPatchTime);
 
       const mockState = createMockState({
@@ -126,8 +125,8 @@ describe('⏱️ Server Reset Engine (Timezone-Locked)', () => {
         patch: { "Hunter Exchange": true }
       });
 
-      // Jump past the August 19 deadline boundary
-      vi.advanceTimersByTime(2 * 60 * 1000); 
+      // Jump past the November 11, 05:59 (UTC+8) deadline boundary
+      vi.advanceTimersByTime(2 * 60 * 1000);
 
       const updatedResult = checkAndResetState(mockState, config);
 

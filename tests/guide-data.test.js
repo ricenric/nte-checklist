@@ -9,6 +9,13 @@ describe('Character roster data integrity', () => {
         });
     });
 
+    it('includes the newly added S-tier characters', () => {
+        expect(CHARACTERS).toEqual(expect.arrayContaining([
+            expect.objectContaining({ id: 'linko', name: 'Linko', element: 'anima', rarity: 's' }),
+            expect.objectContaining({ id: 'blackbird', name: 'Blackbird', element: 'psyche', rarity: 's' })
+        ]));
+    });
+
     it('every element is one of the known categories', () => {
         const validElements = ['cosmos', 'anima', 'incantation', 'chaos', 'psyche', 'lakshana'];
         CHARACTERS.forEach(character => {
